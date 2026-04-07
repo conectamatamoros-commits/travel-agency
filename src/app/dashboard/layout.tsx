@@ -5,7 +5,6 @@ import Sidebar from '@/components/layout/Sidebar'
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
@@ -15,9 +14,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar userName={profile?.nombre ?? user.email ?? 'Usuario'} userRol={profile?.rol ?? 'staff'} />
-      <main className="flex-1 ml-64 overflow-y-auto">
+      {/* Desktop: margen izquierdo para el sidebar */}
+      {/* Mobile: padding top para la barra superior y bottom para la nav inferior */}
+      <main className="md:ml-64 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
         {children}
       </main>
     </div>
