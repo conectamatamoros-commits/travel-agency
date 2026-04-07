@@ -85,15 +85,12 @@ export default function PagosClient({ viajeros, viajes, abonosPorViajero, initia
       const saldo_pendiente = Math.max(0, viajero.total_costo - total_pagado)
       await supabase.from('viajeros').update({ total_pagado, saldo_pendiente }).eq('id', viajero.id)
       recalcTotales(viajero.id, nuevos)
-
-      // Mostrar comprobante
       const viajeroActualizado = { ...viajero, total_pagado, saldo_pendiente }
       setComprobante({
         viajero: viajeroActualizado,
         viaje: { nombre: (viajero.viaje as { nombre?: string } | null)?.nombre ?? '' },
         abono: { monto: montoNum, numero_abono: numeroAbono, notas: notas || undefined }
       })
-
       showMsg('✅ Abono registrado')
     }
     setMonto(''); setNotas(''); setAddingAbono(null)
@@ -147,7 +144,6 @@ export default function PagosClient({ viajeros, viajes, abonosPorViajero, initia
 
   return (
     <>
-      {/* Comprobante modal */}
       {comprobante && (
         <ComprobantePago
           viajero={comprobante.viajero}
@@ -158,208 +154,189 @@ export default function PagosClient({ viajeros, viajes, abonosPorViajero, initia
       )}
 
       <div className="space-y-4">
-        {/* Resumen */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="card p-4">
             <p className="text-sm text-gray-500">Total recaudado</p>
-            <p className="text-xl font-bold text-green-600 mt-1">{formatMXN(totalRecaudado)}</p>
+            <p className="text-lg md:text-xl font-bold text-green-600 mt-1">{formatMXN(totalRecaudado)}</p>
           </div>
           <div className="card p-4">
             <p className="text-sm text-gray-500">Total pendiente</p>
-            <p className="text-xl font-bold text-orange-500 mt-1">{formatMXN(totalPendiente)}</p>
+            <p className="text-lg md:text-xl font-bold text-orange-500 mt-1">{formatMXN(totalPendiente)}</p>
           </div>
-          <div className="card p-4">
-            <p className="text-sm text-gray-500">Viajeros mostrados</p>
+          <div className="card p-4 hidden md:block">
+            <p className="text-sm text-gray-500">Viajeros</p>
             <p className="text-xl font-bold text-gray-900 mt-1">{filtered.length}</p>
           </div>
         </div>
 
-        {/* Filtros */}
-        <div className="card p-4 flex items-center gap-3 flex-wrap">
+        <div className="card p-4 flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar viajero..." className="input pl-9" />
           </div>
-          <select value={viajeFilter} onChange={e => setViajeFilter(e.target.value)} className="input w-52">
+          <select value={viajeFilter} onChange={e => setViajeFilter(e.target.value)} className="input w-full md:w-52">
             <option value="">Todos los viajes</option>
             {viajes.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
           </select>
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input type="checkbox" checked={soloDeuda} onChange={e => setSoloDeuda(e.target.checked)} className="w-4 h-4 rounded" />
             Solo con deuda
           </label>
-          {msg && <span className="text-green-600 text-sm font-medium ml-auto">{msg}</span>}
+          {msg && <span className="text-green-600 text-sm font-medium">{msg}</span>}
         </div>
 
-        {/* Tabla */}
-        <div className="card overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="table-header">Viajero</th>
-                <th className="table-header">Viaje</th>
-                <th className="table-header">Total costo</th>
-                <th className="table-header">Pagado</th>
-                <th className="table-header">Pendiente</th>
-                <th className="table-header">Estado</th>
-                <th className="table-header">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map(v => {
-                const viajeroAbonos = abonos[v.id] ?? []
-                const isExpanded = expandedId === v.id
-                const isAddingThis = addingAbono === v.id
-                const pagoPct = v.total_costo > 0 ? (v.total_pagado / v.total_costo) * 100 : 100
+        {/* Lista mobile-friendly */}
+        <div className="space-y-2">
+          {filtered.map(v => {
+            const viajeroAbonos = abonos[v.id] ?? []
+            const isExpanded = expandedId === v.id
+            const isAddingThis = addingAbono === v.id
+            const pagoPct = v.total_costo > 0 ? Math.min((v.total_pagado / v.total_costo) * 100, 100) : 100
 
-                return (
-                  <>
-                    <tr key={v.id}
-                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${isExpanded ? 'bg-brand-50/30' : ''}`}
-                      onClick={() => setExpandedId(isExpanded ? null : v.id)}>
-                      <td className="table-cell">
-                        <div className="flex items-center gap-2">
-                          {isExpanded ? <ChevronUp className="w-4 h-4 text-brand-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-300 flex-shrink-0" />}
-                          <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center">
-                            <span className="text-xs font-bold text-brand-700">{v.nombre.charAt(0)}</span>
-                          </div>
-                          <span className="font-medium text-gray-900 text-sm">{v.nombre}</span>
-                        </div>
-                      </td>
-                      <td className="table-cell">
-                        <span className="text-xs text-gray-500 truncate max-w-[120px] block">
-                          {(v.viaje as { nombre?: string } | null)?.nombre ?? '—'}
-                        </span>
-                      </td>
-                      <td className="table-cell font-medium text-gray-700">{formatMXN(v.total_costo)}</td>
-                      <td className="table-cell">
-                        <div>
-                          <span className="font-medium text-green-600">{formatMXN(v.total_pagado)}</span>
-                          <div className="h-1 bg-gray-100 rounded-full mt-1 w-20">
-                            <div className="h-full bg-green-400 rounded-full" style={{ width: `${Math.min(pagoPct, 100)}%` }} />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="table-cell">
-                        {(v.saldo_pendiente || 0) > 0
-                          ? <span className="font-semibold text-orange-500">{formatMXN(v.saldo_pendiente)}</span>
-                          : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="table-cell" onClick={e => e.stopPropagation()}>
-                        {(v.saldo_pendiente || 0) <= 0
-                          ? <span className="badge-verde">Liquidado</span>
-                          : <span className="badge-amarillo">Pendiente</span>}
-                      </td>
-                      <td className="table-cell" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
-                          {v.celular && (v.saldo_pendiente || 0) > 0 && (
-                            <button onClick={() => openWA(v.celular!, v.nombre, v.saldo_pendiente)}
-                              className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg" title="Recordar pago">
-                              <Phone className="w-3.5 h-3.5" />
-                            </button>
+            return (
+              <div key={v.id} className="card overflow-hidden">
+                {/* Fila principal */}
+                <div className="p-4 flex items-center gap-3 cursor-pointer"
+                  onClick={() => setExpandedId(isExpanded ? null : v.id)}>
+                  <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-brand-700">{v.nombre.charAt(0)}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">{v.nombre}</p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {(v.viaje as { nombre?: string } | null)?.nombre ?? ''}
+                    </p>
+                    <div className="h-1.5 bg-gray-100 rounded-full mt-1.5 w-full">
+                      <div className={`h-full rounded-full ${pagoPct >= 100 ? 'bg-green-500' : 'bg-brand-500'}`}
+                        style={{ width: `${pagoPct}%` }} />
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-sm font-semibold text-green-600">{formatMXN(v.total_pagado)}</p>
+                    {(v.saldo_pendiente || 0) > 0
+                      ? <p className="text-xs text-orange-500">-{formatMXN(v.saldo_pendiente)}</p>
+                      : <p className="text-xs text-green-500">✓ Pagado</p>}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {v.celular && (v.saldo_pendiente || 0) > 0 && (
+                      <button onClick={e => { e.stopPropagation(); openWA(v.celular!, v.nombre, v.saldo_pendiente) }}
+                        className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg">
+                        <Phone className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button onClick={e => { e.stopPropagation(); setAddingAbono(isAddingThis ? null : v.id); setExpandedId(v.id) }}
+                      className="p-1.5 text-brand-500 hover:bg-brand-50 rounded-lg">
+                      <Plus className="w-4 h-4" />
+                    </button>
+                    {isExpanded
+                      ? <ChevronUp className="w-4 h-4 text-gray-400" />
+                      : <ChevronDown className="w-4 h-4 text-gray-300" />}
+                  </div>
+                </div>
+
+                {/* Panel expandido */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        Abonos ({viajeroAbonos.length})
+                      </h4>
+                      {viajeroAbonos.length > 0 && (
+                        <button onClick={() => {
+                          const ultimo = viajeroAbonos[viajeroAbonos.length - 1]
+                          setComprobante({
+                            viajero: v,
+                            viaje: { nombre: (v.viaje as { nombre?: string } | null)?.nombre ?? '' },
+                            abono: { monto: ultimo.monto, numero_abono: viajeroAbonos.length, notas: ultimo.notas }
+                          })
+                        }} className="flex items-center gap-1 text-xs text-brand-600">
+                          <Receipt className="w-3.5 h-3.5" /> Comprobante
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Abonos — botones SIEMPRE visibles */}
+                    <div className="space-y-2 mb-4">
+                      {viajeroAbonos.map((a, i) => (
+                        <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-3">
+                          {editingAbono === a.id ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 w-16">Abono {i + 1}</span>
+                              <input type="number" value={editMonto} onChange={e => setEditMonto(e.target.value)}
+                                className="input text-sm flex-1" autoFocus />
+                              <button onClick={() => saveEditAbono(v.id, a.id)} disabled={saving}
+                                className="p-2 bg-green-500 text-white rounded-lg">
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditingAbono(null)}
+                                className="p-2 bg-gray-100 text-gray-600 rounded-lg">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <p className="text-xs text-gray-400">Abono {i + 1}</p>
+                                <p className="font-semibold text-green-600">{formatMXN(a.monto)}</p>
+                                {a.notas && <p className="text-xs text-gray-400 mt-0.5">{a.notas}</p>}
+                              </div>
+                              {/* Botones SIEMPRE visibles */}
+                              <button onClick={() => { setEditingAbono(a.id); setEditMonto(String(a.monto)) }}
+                                className="p-2 text-brand-500 hover:bg-brand-50 rounded-lg border border-brand-200">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button onClick={() => deleteAbono(v.id, a.id)}
+                                className="p-2 text-red-400 hover:bg-red-50 rounded-lg border border-red-200">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           )}
-                          <button onClick={() => { setAddingAbono(isAddingThis ? null : v.id); setExpandedId(v.id) }}
-                            className="p-1.5 text-brand-500 hover:bg-brand-50 rounded-lg" title="Registrar abono">
-                            <Plus className="w-3.5 h-3.5" />
+                        </div>
+                      ))}
+                      {viajeroAbonos.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-2">Sin abonos registrados</p>
+                      )}
+                    </div>
+
+                    {/* Agregar abono */}
+                    {isAddingThis && (
+                      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                        <p className="text-sm font-medium text-gray-700">Nuevo abono</p>
+                        <div>
+                          <label className="label">Monto (MXN)</label>
+                          <input type="number" value={monto} onChange={e => setMonto(e.target.value)}
+                            placeholder="0.00" className="input" autoFocus />
+                        </div>
+                        <div>
+                          <label className="label">Notas (opcional)</label>
+                          <input type="text" value={notas} onChange={e => setNotas(e.target.value)}
+                            placeholder="Transferencia, efectivo..." className="input" />
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => addAbono(v)} disabled={saving || !monto} className="btn-primary flex-1">
+                            {saving ? '...' : 'Guardar abono'}
+                          </button>
+                          <button onClick={() => setAddingAbono(null)} className="btn-secondary">
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
-                      </td>
-                    </tr>
-
-                    {isExpanded && (
-                      <tr key={`${v.id}-exp`}>
-                        <td colSpan={7} className="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                          <div className="ml-9">
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Historial de abonos ({viajeroAbonos.length})
-                              </h4>
-                              {viajeroAbonos.length > 0 && (
-                                <button onClick={() => {
-                                  const ultimo = viajeroAbonos[viajeroAbonos.length - 1]
-                                  setComprobante({
-                                    viajero: v,
-                                    viaje: { nombre: (v.viaje as { nombre?: string } | null)?.nombre ?? '' },
-                                    abono: { monto: ultimo.monto, numero_abono: viajeroAbonos.length, notas: ultimo.notas }
-                                  })
-                                }} className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700">
-                                  <Receipt className="w-3.5 h-3.5" /> Ver comprobante
-                                </button>
-                              )}
-                            </div>
-
-                            {viajeroAbonos.length > 0 ? (
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                {viajeroAbonos.map((a, i) => (
-                                  <div key={a.id} className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm group relative">
-                                    <p className="text-xs text-gray-400">Abono {i + 1}</p>
-                                    {editingAbono === a.id ? (
-                                      <div className="flex items-center gap-1 mt-1">
-                                        <input type="number" value={editMonto} onChange={e => setEditMonto(e.target.value)}
-                                          className="input text-xs w-24 py-1" autoFocus />
-                                        <button onClick={() => saveEditAbono(v.id, a.id)} disabled={saving}
-                                          className="p-1 text-green-600 hover:bg-green-50 rounded">
-                                          <Check className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button onClick={() => setEditingAbono(null)} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
-                                          <X className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-2">
-                                        <p className="font-semibold text-green-600">{formatMXN(a.monto)}</p>
-                                        <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
-                                          <button onClick={() => { setEditingAbono(a.id); setEditMonto(String(a.monto)) }}
-                                            className="p-0.5 text-gray-400 hover:text-brand-500">
-                                            <Edit2 className="w-3 h-3" />
-                                          </button>
-                                          <button onClick={() => deleteAbono(v.id, a.id)}
-                                            className="p-0.5 text-gray-400 hover:text-red-500">
-                                            <Trash2 className="w-3 h-3" />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    )}
-                                    {a.notas && <p className="text-xs text-gray-400 mt-0.5">{a.notas}</p>}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-400 mb-4">Sin abonos registrados</p>
-                            )}
-
-                            {isAddingThis && (
-                              <div className="flex items-end gap-3 p-4 bg-white border border-gray-200 rounded-xl max-w-md">
-                                <div className="flex-1">
-                                  <label className="label">Monto (MXN)</label>
-                                  <input type="number" value={monto} onChange={e => setMonto(e.target.value)}
-                                    placeholder="0.00" className="input" autoFocus />
-                                </div>
-                                <div className="flex-1">
-                                  <label className="label">Notas (opcional)</label>
-                                  <input type="text" value={notas} onChange={e => setNotas(e.target.value)}
-                                    placeholder="Transferencia, efectivo..." className="input" />
-                                </div>
-                                <button onClick={() => addAbono(v)} disabled={saving || !monto} className="btn-primary">
-                                  {saving ? '...' : 'Guardar'}
-                                </button>
-                                <button onClick={() => setAddingAbono(null)} className="p-2 text-gray-400 hover:text-gray-600">
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
+                      </div>
                     )}
-                  </>
-                )
-              })}
-              {filtered.length === 0 && (
-                <tr><td colSpan={7} className="py-16 text-center text-gray-400">No se encontraron viajeros</td></tr>
-              )}
-            </tbody>
-          </table>
+
+                    {!isAddingThis && (
+                      <button onClick={() => setAddingAbono(v.id)}
+                        className="w-full py-2 border-2 border-dashed border-brand-200 text-brand-600 text-sm rounded-xl hover:bg-brand-50 flex items-center justify-center gap-2">
+                        <Plus className="w-4 h-4" /> Registrar abono
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {filtered.length === 0 && (
+            <div className="card py-16 text-center text-gray-400">No se encontraron viajeros</div>
+          )}
         </div>
       </div>
     </>
