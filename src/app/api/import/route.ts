@@ -12,12 +12,18 @@ export async function POST(request: NextRequest) {
 
     const buffer = await file.arrayBuffer()
     const parsed = parseExcelFile(buffer, file.name)
+
+    console.log(`Parsed ${file.name}: ${parsed.viajeros.length} viajeros, ${parsed.habitaciones.length} habitaciones`)
+
     const supabase = createAdminClient()
 
     // 1. Upsert viaje
     const { data: viaje, error: viajeError } = await supabase
       .from('viajes')
-      .upsert({ nombre: parsed.viaje.nombre, nombre_archivo: parsed.viaje.nombre_archivo, activo: true }, { onConflict: 'nombre_archivo' })
+      .upsert(
+        { nombre: parsed.viaje.nombre, nombre_archivo: parsed.viaje.nombre_archivo, activo: true },
+        { onConflict: 'nombre_archivo' }
+      )
       .select('id')
       .single()
 
@@ -27,17 +33,9 @@ export async function POST(request: NextRequest) {
 
     const viajeId = viaje.id
 
-    // 2. Insert secciones
-    if (parsed.secciones.length > 0) {
-      await supabase.from('secciones_boletos').delete().eq('viaje_id', viajeId)
-      await supabase.from('secciones_boletos').insert(
-        parsed.secciones.map(s => ({ ...s, viaje_id: viajeId }))
-      )
-    }
-
-    // 3. Insert viajeros
+    // 2. Insert viajeros
     let viajeroCount = 0
-    const viajeroIdMap = new Map<string, string>() // nombre -> id
+    const viajeroIdMap = new Map<string, string>()
 
     for (const v of parsed.viajeros) {
       const { data: viajero, error } = await supabase
@@ -52,8 +50,6 @@ export async function POST(request: NextRequest) {
           descuento: v.descuento ?? null,
           tipo_habitacion: v.tipo_habitacion ?? null,
           seccion_boleto: v.seccion_boleto ?? null,
-          ciudadania: v.ciudadania ?? null,
-          fecha_nacimiento: v.fecha_nacimiento ?? null,
           estado: v.estado,
           es_coordinador: v.es_coordinador,
           es_operador: v.es_operador,
@@ -93,13 +89,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 4. Insert habitaciones
+    // 3. Insert habitaciones
     let habCount = 0
     if (parsed.habitaciones.length > 0) {
-      await supabase.from('asignaciones_cuarto').delete().eq('habitacion_id', 
-        (await supabase.from('habitaciones').select('id').eq('viaje_id', viajeId)).data?.map(h => h.id) ?? []
-      )
-      await supabase.from('habitaciones').delete().eq('viaje_id', viajeId)
+      const { data: existingHabs } = await supabase.from('habitaciones').select('id').eq('viaje_id', viajeId)
+      if (existingHabs && existingHabs.length > 0) {
+        const habIds = existingHabs.map(h => h.id)
+        await supabase.from('asignaciones_cuarto').delete().in('habitacion_id', habIds)
+        await supabase.from('habitaciones').delete().eq('viaje_id', viajeId)
+      }
 
       for (const h of parsed.habitaciones) {
         const { data: hab } = await supabase.from('habitaciones').insert({
@@ -110,7 +108,6 @@ export async function POST(request: NextRequest) {
 
         if (hab) {
           habCount++
-          // Assign viajeros to room
           for (const nombreViajero of h.viajeros) {
             const viajeroId = viajeroIdMap.get(nombreViajero)
             if (viajeroId) {
@@ -124,7 +121,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Insert lista espera
+    // 4. Lista espera
     if (parsed.lista_espera.length > 0) {
       await supabase.from('lista_espera').delete().eq('viaje_id', viajeId)
       await supabase.from('lista_espera').insert(
@@ -147,6 +144,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Import error:', error)
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno: ' + String(error) }, { status: 500 })
   }
 }
