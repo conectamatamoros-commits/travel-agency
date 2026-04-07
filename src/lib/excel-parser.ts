@@ -14,167 +14,167 @@ export interface ParsedExcelData {
   lista_espera: { nombre: string; celular?: string; personas: number }[]
 }
 
-const SKIP_WORDS = ['VIAJERO','NOMBRE','INFORMACI','CELULAR','TALLA','CUARTO',
-  'TOTAL','DOBLE','TRIPLE','CUADRUPLE','INDIVIDUAL','TRANSPORTE','KIT','GASTOS',
-  'GNP','BACHATA','DIAMANTE','BEYOND','PLATINO','VIP','GENERAL','STAY',
-  'DATOS','INFO','CONTACTO','COLUMN','PARENTESCO','NUMERO','CORREO','DESCUENTO',
-  'FECHA','NAN','UNDEFINED','NULL','VUELOS','TRASLADOS','BOLETOS',
-  'COORDINADOR','OPERADOR','BAJA','NUEVOS','COSTOS','RESERVACION',
-  'SHEET','HOJA','TABLAS','ABONO','ROOMLIST','HABITACION','CANCHA']
+const SKIP_WORDS = ['TOTAL','DOBLE','TRIPLE','CUADRUPLE','INDIVIDUAL','TRANSPORTE',
+  'KIT','GASTOS','GNP','CANCHA','VIP','GENERAL','DADO','BAJA','VIAJERO','NOMBRE',
+  'INFORMACI','CELULAR','TALLA','CUARTO','DATOS','INFO','CONTACTO','ABONO',
+  'ROOMLIST','HABITACION','TABLAS','HOJA','SHEET','STAY','VUELOS','TRASLADOS']
 
-function isName(val: unknown): boolean {
-  if (val === null || val === undefined) return false
-  const s = String(val).trim()
-  if (s.length < 4) return false
-  if (/^\d+([.,]\d+)?$/.test(s)) return false
-  if (s.includes('@')) return false
-  // Must have at least 2 words (first and last name)
-  const words = s.split(/\s+/).filter(w => w.length > 0)
-  if (words.length < 2) return false
-  // Must start with a letter
-  if (!/^[A-Za-záéíóúÁÉÍÓÚñÑüÜ]/.test(s)) return false
+const TIPO_MAP: Record<string, string> = {
+  'DOBLE': 'Doble', 'TRIPLE': 'Triple', 
+  'CUADRUPLE': 'Cuadruple', 'CUADRUPLE': 'Cuadruple',
+  'INDIVIDUAL': 'Individual'
+}
+
+function isViajeroName(val: unknown): boolean {
+  if (!val || typeof val !== 'string') return false
+  const s = val.trim()
+  // Must have a space (first + last name)
+  if (!s.includes(' ')) return false
+  if (s.length < 6) return false
+  // Must start with letter
+  if (!/^[A-Za-záéíóúÁÉÍÓÚñÑüÜÄÖÅ]/.test(s)) return false
+  // No digits
+  if (/\d/.test(s)) return false
+  // Not a keyword
   const upper = s.toUpperCase()
   return !SKIP_WORDS.some(k => upper.includes(k))
 }
 
-function toNum(val: unknown): number | undefined {
-  if (val === null || val === undefined) return undefined
-  const n = typeof val === 'number' ? val : Number(String(val).replace(',','.'))
-  return isNaN(n) || n <= 0 ? undefined : n
+function asNumber(val: unknown): number | null {
+  if (val === null || val === undefined) return null
+  const n = typeof val === 'number' ? val : parseFloat(String(val).replace(',', '.'))
+  return isNaN(n) || n <= 0 ? null : n
 }
 
-function toDate(val: unknown): string | undefined {
-  if (!val) return undefined
-  try {
-    if (val instanceof Date) return val.toISOString().split('T')[0]
-    if (typeof val === 'number' && val > 40000) {
-      const d = new Date((val - 25569) * 86400000)
-      return d.toISOString().split('T')[0]
-    }
-    const s = String(val)
-    if (s.match(/^\d{4}-\d{2}-\d{2}/)) return s.slice(0,10)
-  } catch {}
-  return undefined
-}
-
-function parseAbonosSheet(ws: XLSX.WorkSheet, seccionName?: string): ParsedExcelData['viajeros'] {
+function parseAbonos(ws: XLSX.WorkSheet, seccionName?: string): ParsedExcelData['viajeros'] {
   const result: ParsedExcelData['viajeros'] = []
-  const TIPOS: Record<string,string> = {
-    'DOBLE':'Doble','TRIPLE':'Triple','CUADRUPLE':'Cuadruple',
-    'CUÁDRUPLE':'Cuadruple','INDIVIDUAL':'Individual'
-  }
-  const TALLAS = new Set(['XS','S','M','L','XL','2XL','XXL'])
-
-  // Use sheet_to_json with header:1 to get raw arrays
-  const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
-
-  for (const rawRow of rows) {
-    if (!Array.isArray(rawRow)) continue
-    const row = rawRow as unknown[]
-
-    // Find name in first 4 columns
+  
+  // Get raw cell data
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
+  
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    // Look for name in columns 0-3
     let nombre = ''
-    let nameIdx = -1
-    for (let i = 0; i < Math.min(4, row.length); i++) {
-      if (isName(row[i])) { nombre = String(row[i]).trim(); nameIdx = i; break }
+    let nameCol = -1
+    
+    for (let c = 0; c <= Math.min(3, range.e.c); c++) {
+      const addr = XLSX.utils.encode_cell({ r, c })
+      const cell = ws[addr]
+      if (!cell) continue
+      const v = cell.v
+      if (isViajeroName(v)) {
+        nombre = String(v).trim()
+        nameCol = c
+        break
+      }
     }
-    if (!nombre || nameIdx < 0) continue
-
-    // Get all numbers after name (skip nulls)
+    
+    if (!nombre || nameCol < 0) continue
+    
+    // Collect numbers and strings after name
     const nums: number[] = []
-    for (let i = nameIdx + 1; i < row.length; i++) {
-      const n = toNum(row[i])
-      if (n !== undefined) nums.push(n)
+    const strs: string[] = []
+    
+    for (let c = nameCol + 1; c <= range.e.c; c++) {
+      const addr = XLSX.utils.encode_cell({ r, c })
+      const cell = ws[addr]
+      if (!cell || cell.v === null || cell.v === undefined) continue
+      
+      const n = asNumber(cell.v)
+      if (n !== null) {
+        nums.push(n)
+      } else if (typeof cell.v === 'string' && cell.v.trim()) {
+        strs.push(cell.v.trim())
+      }
     }
-
-    // Last 3 nums = total_pagado, total_costo, saldo_pendiente
-    let total_pagado = 0, total_costo = 0, saldo_pendiente = 0, abonos: number[] = []
+    
+    // Last 3 numbers = total_pagado, total_costo, saldo_pendiente
+    let total_pagado = 0, total_costo = 0, saldo_pendiente = 0
+    let abonos: number[] = []
+    
     if (nums.length >= 3) {
       saldo_pendiente = nums[nums.length - 1]
       total_costo = nums[nums.length - 2]
       total_pagado = nums[nums.length - 3]
-      abonos = nums.slice(0, nums.length - 3).filter(n => n > 0)
+      abonos = nums.slice(0, nums.length - 3)
     } else if (nums.length === 2) {
-      total_pagado = nums[0]; total_costo = nums[1]
+      total_pagado = nums[0]
+      total_costo = nums[1]
       saldo_pendiente = Math.max(0, total_costo - total_pagado)
     } else if (nums.length === 1) {
       total_pagado = nums[0]
+    } else {
+      continue // No numbers = not a valid row
     }
-
-    // Get text values after name
-    const texts: string[] = []
-    for (let i = nameIdx + 1; i < row.length; i++) {
-      const v = row[i]
-      if (v === null || v === undefined) continue
-      const s = String(v).trim()
-      if (!s || s === 'null' || s === 'NaN') continue
-      if (typeof v === 'number') continue
-      texts.push(s)
-    }
-
-    const tipoRaw = texts.find(t => TIPOS[t.toUpperCase().replace('Á','A')])
-    const tipo_habitacion = tipoRaw ? TIPOS[tipoRaw.toUpperCase().replace('Á','A')] : undefined
-    const talla = texts.find(t => TALLAS.has(t.toUpperCase()))
-    const celular = texts.find(t => /^[\d\s\(\)\-\.]{7,}$/.test(t) && t.replace(/\D/g,'').length >= 7)
-    const seccion = seccionName ?? texts.find(t =>
-      !TIPOS[t.toUpperCase().replace('Á','A')] &&
-      !TALLAS.has(t.toUpperCase()) &&
-      !/^[\d\s\(\)\-\.]{7,}$/.test(t) &&
-      t.length > 1 && t !== 'L' && t !== 'M' && t !== 'null'
+    
+    // Find tipo habitacion
+    const tipoRaw = strs.find(s => TIPO_MAP[s.toUpperCase().replace(/Á/g,'A').replace(/É/g,'E')])
+    const tipo_habitacion = tipoRaw ? TIPO_MAP[tipoRaw.toUpperCase().replace(/Á/g,'A').replace(/É/g,'E')] : undefined
+    
+    // Find talla
+    const TALLAS = new Set(['XS','S','M','L','XL','2XL','XXL'])
+    const talla = strs.find(s => TALLAS.has(s.toUpperCase()))
+    
+    // Find celular
+    const celular = strs.find(s => /^\d[\d\s\-\.\(\)]{6,}$/.test(s))
+    
+    // Find seccion
+    const seccion = seccionName ?? strs.find(s => 
+      !TIPO_MAP[s.toUpperCase().replace(/Á/g,'A')] &&
+      !TALLAS.has(s.toUpperCase()) &&
+      !/^\d[\d\s\-\.\(\)]{6,}$/.test(s) &&
+      s.length > 1 && !['L','M','S','null','NaN'].includes(s)
     )
-
+    
     result.push({
-      nombre, talla, celular, tipo_habitacion, seccion_boleto: seccion,
+      nombre, talla, celular,
+      tipo_habitacion, seccion_boleto: seccion,
       estado: 'activo', es_coordinador: false, es_operador: false,
       total_pagado, total_costo, saldo_pendiente, abonos,
     })
   }
+  
   return result
 }
 
-function parseInfoSheet(ws: XLSX.WorkSheet): Map<string, Partial<ParsedExcelData['viajeros'][0]>> {
+function parseInfo(ws: XLSX.WorkSheet): Map<string, Partial<ParsedExcelData['viajeros'][0]>> {
   const map = new Map<string, Partial<ParsedExcelData['viajeros'][0]>>()
   const TALLAS = new Set(['XS','S','M','L','XL','2XL','XXL','-'])
   const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
-
-  for (const rawRow of rows) {
-    if (!Array.isArray(rawRow)) continue
-    const row = rawRow as unknown[]
+  
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue
     let nombre = '', fecha: string|undefined, talla: string|undefined
     let celular: string|undefined, correo: string|undefined, descuento: string|undefined
-
+    
     for (const cell of row) {
       if (cell === null || cell === undefined) continue
       const s = String(cell).trim()
-      if (!s || s === 'null' || s === 'NaN') continue
-      // Date detection
-      if (s.match(/^\d{4}-\d{2}-\d{2}/) || (typeof cell === 'number' && cell > 40000 && cell < 55000)) {
-        fecha = toDate(cell) ?? fecha; continue
-      }
+      if (!s || s === 'null') continue
+      
       if (s.includes('@') && !correo) { correo = s; continue }
       if (TALLAS.has(s.toUpperCase()) && !talla) { talla = s; continue }
       if ((s.toLowerCase().includes('desc') || s.toLowerCase().includes('frec')) && !descuento) { descuento = s; continue }
-      if (/^[\d\s\(\)\-\.]{7,}$/.test(s) && s.replace(/\D/g,'').length >= 7 && !celular) { celular = s; continue }
-      if (isName(cell) && !nombre) { nombre = s; continue }
+      if (/^\d{4}-\d{2}-\d{2}/.test(s) && !fecha) { fecha = s.slice(0,10); continue }
+      if (/^\d[\d\s\-\.\(\)]{6,}$/.test(s) && !celular) { celular = s; continue }
+      if (isViajeroName(cell) && !nombre) { nombre = s; continue }
     }
     if (nombre) map.set(nombre, { fecha_inscripcion: fecha, talla, celular, correo, descuento })
   }
   return map
 }
 
-function parseContactoSheet(ws: XLSX.WorkSheet): Map<string, ParsedExcelData['viajeros'][0]['contacto']> {
+function parseContacto(ws: XLSX.WorkSheet): Map<string, ParsedExcelData['viajeros'][0]['contacto']> {
   const map = new Map<string, ParsedExcelData['viajeros'][0]['contacto']>()
   const PARENTESCOS = new Set(['PAREJA','ESPOSO','ESPOSA','MADRE','PADRE','HERMANO','HERMANA',
     'HIJO','HIJA','AMIGO','AMIGA','ABUELO','ABUELA','ABUELITA','NOVIO','NOVIA','PRIMO','PRIMA'])
   const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
-
-  for (const rawRow of rows) {
-    if (!Array.isArray(rawRow)) continue
-    const texts = (rawRow as unknown[])
-      .map(v => String(v ?? '').trim())
-      .filter(v => v && v !== 'null' && v !== 'NaN')
+  
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue
+    const texts = row.map(v => String(v ?? '').trim()).filter(v => v && v !== 'null')
     if (texts.some(t => ['VIAJERO','NOMBRE','PARENTESCO','NUMERO'].includes(t.toUpperCase()))) continue
-    const names = texts.filter(t => isName(t))
+    const names = texts.filter(t => isViajeroName(t))
     if (!names[0]) continue
     const parentesco = texts.find(t => PARENTESCOS.has(t.toUpperCase()))
     const numero = texts.find(t => t.replace(/\D/g,'').length >= 7)
@@ -183,39 +183,39 @@ function parseContactoSheet(ws: XLSX.WorkSheet): Map<string, ParsedExcelData['vi
   return map
 }
 
-function parseRoomlistSheet(ws: XLSX.WorkSheet): ParsedExcelData['habitaciones'] {
+function parseRooms(ws: XLSX.WorkSheet): ParsedExcelData['habitaciones'] {
   const habs: ParsedExcelData['habitaciones'] = []
   const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
   let headerRow = -1
-
+  
   for (let i = 0; i < rows.length; i++) {
     if ((rows[i] as unknown[]).some(v => /cuarto\s*\d*/i.test(String(v ?? '')))) {
       headerRow = i; break
     }
   }
   if (headerRow < 0) return habs
-
+  
   const headers = rows[headerRow] as unknown[]
   const cols: { idx: number; nombre: string }[] = []
   headers.forEach((v, i) => {
     const s = String(v ?? '').trim()
     if (/cuarto\s*\d*/i.test(s)) cols.push({ idx: i, nombre: s })
   })
-
-  const TIPOS = new Set(['DOBLE','TRIPLE','CUADRUPLE','CUÁDRUPLE','INDIVIDUAL'])
+  
+  const TIPOS = new Set(['DOBLE','TRIPLE','CUADRUPLE','INDIVIDUAL'])
   const cuartos = new Map(cols.map(c => [c.idx, { nombre: c.nombre, tipo: undefined as string|undefined, viajeros: [] as string[] }]))
-
+  
   for (let i = headerRow + 1; i < rows.length; i++) {
     const row = rows[i] as unknown[]
     for (const c of cols) {
       const v = String(row[c.idx] ?? '').trim()
       if (!v || v === 'null') continue
       const d = cuartos.get(c.idx)!
-      if (TIPOS.has(v.toUpperCase().replace('Á','A'))) d.tipo = v
-      else if (isName(v)) d.viajeros.push(v)
+      if (TIPOS.has(v.toUpperCase().replace(/Á/g,'A'))) d.tipo = v
+      else if (isViajeroName(v)) d.viajeros.push(v)
     }
   }
-
+  
   cuartos.forEach(d => {
     if (d.viajeros.length > 0 || d.tipo)
       habs.push({ numero_cuarto: d.nombre, tipo: d.tipo, viajeros: d.viajeros })
@@ -224,7 +224,7 @@ function parseRoomlistSheet(ws: XLSX.WorkSheet): ParsedExcelData['habitaciones']
 }
 
 export function parseExcelFile(buffer: ArrayBuffer, filename: string): ParsedExcelData {
-  const wb = XLSX.read(buffer, { type: 'array', cellDates: false })
+  const wb = XLSX.read(buffer, { type: 'array' })
   const nombre = filename.replace(/\.xlsx?$/i,'').replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase())
 
   const result: ParsedExcelData = {
@@ -245,28 +245,27 @@ export function parseExcelFile(buffer: ArrayBuffer, filename: string): ParsedExc
   for (const sheetName of wb.SheetNames) {
     const upper = sheetName.toUpperCase().trim()
     const ws = wb.Sheets[sheetName]
+    if (!ws || !ws['!ref']) continue
 
     if (SKIP_SHEETS.has(upper)) continue
-    if (upper === 'CONTACTO') { contactoMap = parseContactoSheet(ws); continue }
-    if (INFO_SHEETS.has(upper)) { infoMap = parseInfoSheet(ws); continue }
-    if (ROOM_SHEETS.has(upper)) { const h = parseRoomlistSheet(ws); if (h.length) result.habitaciones = h; continue }
+    if (upper === 'CONTACTO') { contactoMap = parseContacto(ws); continue }
+    if (INFO_SHEETS.has(upper)) { infoMap = parseInfo(ws); continue }
+    if (ROOM_SHEETS.has(upper)) { const h = parseRooms(ws); if (h.length) result.habitaciones = h; continue }
     if (upper.includes('ESPERA')) {
       const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null })
       for (const r of rows) {
         const texts = (r as unknown[]).map(v => String(v ?? '').trim()).filter(v => v && v !== 'null')
-        const n = texts.find(t => isName(t))
+        const n = texts.find(t => isViajeroName(t))
         if (n) result.lista_espera.push({ nombre: n, celular: texts.find(t => t.replace(/\D/g,'').length >= 7), personas: 1 })
       }
       continue
     }
 
-    // All other sheets = abono data
     const seccion = GENERIC_ABONO.has(upper) ? undefined : sheetName
-    const parsed = parseAbonosSheet(ws, seccion)
+    const parsed = parseAbonos(ws, seccion)
     if (parsed.length > 0) allViajeros.push(...parsed)
   }
 
-  // Merge
   const merged = new Map<string, ParsedExcelData['viajeros'][0]>()
   for (const v of allViajeros) {
     if (!v.nombre || merged.has(v.nombre)) continue
@@ -282,9 +281,8 @@ export function parseExcelFile(buffer: ArrayBuffer, filename: string): ParsedExc
     })
   }
 
-  // Add from info not in abonos
   for (const [nombre, info] of infoMap) {
-    if (!merged.has(nombre) && isName(nombre)) {
+    if (!merged.has(nombre) && isViajeroName(nombre)) {
       merged.set(nombre, {
         nombre, estado: 'activo', es_coordinador: false, es_operador: false,
         total_pagado: 0, total_costo: 0, saldo_pendiente: 0, abonos: [],
