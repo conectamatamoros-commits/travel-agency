@@ -1,214 +1,142 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import Link from 'next/link'
-import { Search, Phone, Mail, ChevronRight, Filter, UserPlus } from 'lucide-react'
-import NuevoViajeroForm from './NuevoViajeroForm'
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { X, Save, UserPlus } from 'lucide-react'
 
-function formatMXN(n: number) {
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
-}
-
-interface Viajero {
-  id: string; nombre: string; celular?: string; correo?: string
-  talla?: string; tipo_habitacion?: string; seccion_boleto?: string
-  total_pagado: number; saldo_pendiente: number; total_costo: number
-  viaje?: { nombre: string } | null; viaje_id: string
-}
+const TALLAS = ['XS','S','M','L','XL','2XL','XXL']
+const TIPOS_HAB = ['Doble','Triple','Cuadruple','Individual']
 
 interface Props {
-  viajeros: Viajero[]
   viajes: { id: string; nombre: string }[]
-  initialViaje?: string
-  initialPendiente?: boolean
-  initialQ?: string
+  initialViajeId?: string
+  onClose: () => void
+  onCreated: (viajero: object) => void
 }
 
-const HABITACIONES = ['Doble','Triple','Cuadruple','Individual']
+export default function NuevoViajeroForm({ viajes, initialViajeId, onClose, onCreated }: Props) {
+  const supabase = createClient()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState({
+    nombre: '', celular: '', correo: '', talla: '', tipo_habitacion: '',
+    seccion_boleto: '', descuento: '', total_costo: '',
+    viaje_id: initialViajeId ?? (viajes[0]?.id ?? ''),
+  })
 
-export default function ViajerosClient({ viajeros: initialViajeros, viajes, initialViaje, initialPendiente, initialQ }: Props) {
-  const [viajeros, setViajeros] = useState(initialViajeros)
-  const [q, setQ] = useState(initialQ ?? '')
-  const [viajeFilter, setViajeFilter] = useState(initialViaje ?? '')
-  const [pendiente, setPendiente] = useState(initialPendiente ?? false)
-  const [habFilter, setHabFilter] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [showNuevoViajero, setShowNuevoViajero] = useState(false)
+  async function handleSave() {
+    if (!form.nombre.trim()) { setError('El nombre es obligatorio'); return }
+    if (!form.viaje_id) { setError('Selecciona un viaje'); return }
+    setSaving(true)
+    setError('')
 
-  const filtered = useMemo(() => {
-    let list = viajeros
-    if (q) list = list.filter(v => v.nombre.toLowerCase().includes(q.toLowerCase()) || v.celular?.includes(q) || v.correo?.toLowerCase().includes(q.toLowerCase()))
-    if (viajeFilter) list = list.filter(v => v.viaje_id === viajeFilter)
-    if (pendiente) list = list.filter(v => (v.saldo_pendiente || 0) > 0)
-    if (habFilter) list = list.filter(v => v.tipo_habitacion?.toLowerCase() === habFilter.toLowerCase())
-    return list
-  }, [viajeros, q, viajeFilter, pendiente, habFilter])
+    const total_costo = Number(form.total_costo) || 0
+    const { data, error: err } = await supabase.from('viajeros').insert({
+      viaje_id: form.viaje_id,
+      nombre: form.nombre.trim(),
+      celular: form.celular || null,
+      correo: form.correo || null,
+      talla: form.talla || null,
+      tipo_habitacion: form.tipo_habitacion || null,
+      seccion_boleto: form.seccion_boleto || null,
+      descuento: form.descuento || null,
+      total_costo,
+      total_pagado: 0,
+      saldo_pendiente: total_costo,
+      estado: 'activo',
+      es_coordinador: false,
+      es_operador: false,
+    }).select('*, viaje:viajes(nombre)').single()
 
-  function openWA(celular: string) {
-    const num = celular.replace(/\D/g,'')
-    window.open(`https://wa.me/${num.startsWith('52') ? num : '52'+num}`, '_blank')
+    if (err) { setError('Error al guardar: ' + err.message); setSaving(false); return }
+    if (data) { onCreated(data); onClose() }
+    setSaving(false)
   }
-
-  function handleCreated(nuevo: object) {
-    setViajeros(prev => [nuevo as Viajero, ...prev])
-  }
-
-  const activeFilters = [viajeFilter, pendiente, habFilter].filter(Boolean).length
 
   return (
-    <>
-      {showNuevoViajero && (
-        <NuevoViajeroForm
-          viajes={viajes}
-          initialViajeId={viajeFilter}
-          onClose={() => setShowNuevoViajero(false)}
-          onCreated={handleCreated}
-        />
-      )}
-
-      <div className="space-y-4">
-        {/* Search & Filters */}
-        <div className="card p-4">
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="card w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-              <input type="text" value={q} onChange={e => setQ(e.target.value)}
-                placeholder="Buscar por nombre, teléfono o correo..."
-                className="input pl-9" />
+            <div className="w-9 h-9 bg-brand-100 rounded-xl flex items-center justify-center">
+              <UserPlus className="w-5 h-5 text-brand-600" />
             </div>
-            <button onClick={() => setShowFilters(f => !f)}
-              className={`btn-secondary relative ${showFilters ? 'bg-brand-50 border-brand-200 text-brand-700' : ''}`}>
-              <Filter className="w-4 h-4" />
-              Filtros
-              {activeFilters > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-brand-600 text-white text-xs rounded-full flex items-center justify-center">
-                  {activeFilters}
-                </span>
-              )}
-            </button>
-            <button onClick={() => setShowNuevoViajero(true)} className="btn-primary">
-              <UserPlus className="w-4 h-4" /> Nuevo viajero
-            </button>
+            <h2 className="font-semibold text-gray-900">Nuevo viajero</h2>
           </div>
-
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4">
-              <div>
-                <label className="label">Viaje</label>
-                <select value={viajeFilter} onChange={e => setViajeFilter(e.target.value)} className="input">
-                  <option value="">Todos los viajes</option>
-                  {viajes.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label">Tipo habitación</label>
-                <select value={habFilter} onChange={e => setHabFilter(e.target.value)} className="input">
-                  <option value="">Todos</option>
-                  {HABITACIONES.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label">Estado de pago</label>
-                <label className="flex items-center gap-2 mt-2 cursor-pointer">
-                  <input type="checkbox" checked={pendiente} onChange={e => setPendiente(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-brand-600" />
-                  <span className="text-sm text-gray-700">Solo con saldo pendiente</span>
-                </label>
-              </div>
-            </div>
-          )}
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <p className="text-sm text-gray-500">{filtered.length} viajeros encontrados</p>
+        <div className="p-6 space-y-4">
+          {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>}
 
-        {/* Table */}
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="table-header">Nombre</th>
-                  <th className="table-header">Viaje</th>
-                  <th className="table-header">Habitación</th>
-                  <th className="table-header">Talla</th>
-                  <th className="table-header">Pagado</th>
-                  <th className="table-header">Pendiente</th>
-                  <th className="table-header">Contacto</th>
-                  <th className="table-header w-10"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filtered.map(v => (
-                  <tr key={v.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="table-cell">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold text-brand-700">{v.nombre.charAt(0)}</span>
-                        </div>
-                        <Link href={`/viajeros/${v.id}`} className="font-medium text-gray-900 hover:text-brand-600">
-                          {v.nombre}
-                        </Link>
-                      </div>
-                    </td>
-                    <td className="table-cell">
-                      <span className="text-xs text-gray-500 truncate max-w-[140px] block">
-                        {(v.viaje as { nombre?: string } | null)?.nombre ?? '—'}
-                      </span>
-                    </td>
-                    <td className="table-cell">
-                      {v.tipo_habitacion ? <span className="badge-azul">{v.tipo_habitacion}</span> : <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="table-cell">
-                      {v.talla ? <span className="badge-gris">{v.talla}</span> : <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="table-cell">
-                      <span className="font-medium text-green-600">{formatMXN(v.total_pagado)}</span>
-                    </td>
-                    <td className="table-cell">
-                      {(v.saldo_pendiente || 0) > 0
-                        ? <span className="font-medium text-orange-500">{formatMXN(v.saldo_pendiente)}</span>
-                        : <span className="badge-verde">✓ Pagado</span>}
-                    </td>
-                    <td className="table-cell">
-                      <div className="flex items-center gap-1">
-                        {v.celular && (
-                          <button onClick={() => openWA(v.celular!)}
-                            className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors">
-                            <Phone className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        {v.correo && (
-                          <a href={`mailto:${v.correo}`}
-                            className="p-1.5 text-blue-400 hover:bg-blue-50 rounded-lg transition-colors">
-                            <Mail className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="table-cell">
-                      <Link href={`/viajeros/${v.id}`}>
-                        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-brand-400" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="py-16 text-center text-gray-400">
-                      No se encontraron viajeros
-                      <div className="mt-4">
-                        <button onClick={() => setShowNuevoViajero(true)} className="btn-primary">
-                          <UserPlus className="w-4 h-4" /> Agregar viajero
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div>
+            <label className="label">Viaje *</label>
+            <select value={form.viaje_id} onChange={e => setForm(p=>({...p,viaje_id:e.target.value}))} className="input">
+              <option value="">Seleccionar viaje...</option>
+              {viajes.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+            </select>
           </div>
+
+          <div>
+            <label className="label">Nombre completo *</label>
+            <input value={form.nombre} onChange={e => setForm(p=>({...p,nombre:e.target.value}))}
+              className="input" placeholder="Nombre Apellido Apellido" autoFocus />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Celular / WhatsApp</label>
+              <input value={form.celular} onChange={e => setForm(p=>({...p,celular:e.target.value}))}
+                className="input" placeholder="868 123 4567" />
+            </div>
+            <div>
+              <label className="label">Correo electrónico</label>
+              <input value={form.correo} onChange={e => setForm(p=>({...p,correo:e.target.value}))}
+                className="input" placeholder="correo@ejemplo.com" />
+            </div>
+            <div>
+              <label className="label">Talla</label>
+              <select value={form.talla} onChange={e => setForm(p=>({...p,talla:e.target.value}))} className="input">
+                <option value="">Sin talla</option>
+                {TALLAS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Tipo de habitación</label>
+              <select value={form.tipo_habitacion} onChange={e => setForm(p=>({...p,tipo_habitacion:e.target.value}))} className="input">
+                <option value="">Sin asignar</option>
+                {TIPOS_HAB.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">Sección de boleto</label>
+              <input value={form.seccion_boleto} onChange={e => setForm(p=>({...p,seccion_boleto:e.target.value}))}
+                className="input" placeholder="GNP A, Cancha VIP..." />
+            </div>
+            <div>
+              <label className="label">Total a pagar (MXN)</label>
+              <input type="number" value={form.total_costo} onChange={e => setForm(p=>({...p,total_costo:e.target.value}))}
+                className="input" placeholder="0.00" />
+            </div>
+            <div className="col-span-2">
+              <label className="label">Descuento (opcional)</label>
+              <input value={form.descuento} onChange={e => setForm(p=>({...p,descuento:e.target.value}))}
+                className="input" placeholder="Desc. viajero frecuente..." />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-t border-gray-100 flex justify-end gap-3">
+          <button onClick={onClose} className="btn-secondary">Cancelar</button>
+          <button onClick={handleSave} disabled={saving} className="btn-primary">
+            <Save className="w-4 h-4" />
+            {saving ? 'Guardando...' : 'Crear viajero'}
+          </button>
         </div>
       </div>
-    </>
+    </div>
   )
 }
