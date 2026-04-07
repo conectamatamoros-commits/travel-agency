@@ -1,78 +1,86 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+'use client'
 
-@layer base {
-  * { box-sizing: border-box; }
-  html {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-}
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { Bus, Loader2, Lock, Mail } from 'lucide-react'
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-[#1a3a6b] text-white rounded-lg font-medium text-sm
-           hover:bg-[#102445] active:bg-[#0b1a32] transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  
-  .btn-secondary {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg font-medium text-sm
-           hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50;
-  }
-  
-  .btn-danger {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium text-sm
-           hover:bg-red-700 transition-colors;
-  }
-  
-  .btn-gold {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-[#c9a227] text-white rounded-lg font-medium text-sm
-           hover:bg-[#b7891a] transition-colors;
-  }
-  
-  .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
-  }
-  
-  .input {
-    @apply w-full px-3 py-2 text-sm border border-gray-200 rounded-lg 
-           focus:outline-none focus:ring-2 focus:ring-[#1a3a6b] focus:border-transparent
-           placeholder:text-gray-400;
-  }
-  
-  .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
-  }
-  
-  .badge-verde {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700;
-  }
-  
-  .badge-amarillo {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700;
-  }
-  
-  .badge-rojo {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700;
-  }
-  
-  .badge-azul {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700;
-  }
-  
-  .badge-gris {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600;
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setError('Correo o contraseña incorrectos')
+      setLoading(false)
+    } else {
+      router.push('/dashboard')
+      router.refresh()
+    }
   }
 
-  .badge-dorado {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700;
-  }
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" 
+      style={{ background: 'linear-gradient(135deg, #06101f 0%, #1a3a6b 50%, #102445 100%)' }}>
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4"
+            style={{ background: 'rgba(201, 162, 39, 0.2)', border: '2px solid #c9a227' }}>
+            <Bus className="w-10 h-10" style={{ color: '#c9a227' }} />
+          </div>
+          <h1 className="text-3xl font-bold text-white">Conecta Matamoros</h1>
+          <p className="mt-1" style={{ color: '#c9a227' }}>Agencia de Viajes</p>
+        </div>
 
-  .table-header {
-    @apply text-left text-xs font-semibold text-gray-500 uppercase tracking-wide py-3 px-4;
-  }
-  
-  .table-cell {
-    @apply py-3 px-4 text-sm text-gray-700;
-  }
+        {/* Card */}
+        <div className="bg-white rounded-2xl p-8 shadow-2xl">
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">Iniciar sesión</h2>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="label">Correo electrónico</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  className="input pl-9" placeholder="tu@correo.com" required />
+              </div>
+            </div>
+            
+            <div>
+              <label className="label">Contraseña</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  className="input pl-9" placeholder="••••••••" required />
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>
+            )}
+
+            <button type="submit" disabled={loading}
+              className="w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #1a3a6b, #102445)' }}>
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? 'Ingresando...' : 'Ingresar'}
+            </button>
+          </form>
+        </div>
+        
+        <p className="text-center text-sm mt-6" style={{ color: 'rgba(201,162,39,0.7)' }}>
+          © 2026 Conecta Matamoros · Todos los derechos reservados
+        </p>
+      </div>
+    </div>
+  )
 }
