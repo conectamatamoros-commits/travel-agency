@@ -42,45 +42,57 @@ function processSheet(ws: XLSX.WorkSheet, seccion?: string): object[] {
   const range = XLSX.utils.decode_range(ws['!ref'])
 
   for (let r = range.s.r; r <= range.e.r; r++) {
-    let nombre = ''
-    let nameCol = -1
-    for (let c = 0; c <= Math.min(3, range.e.c); c++) {
-      const cell = ws[XLSX.utils.encode_cell({ r, c })]
-      if (cell && looksLikeName(cell.v)) {
-        nombre = String(cell.v).trim()
-        nameCol = c
-        break
-      }
-    }
-    if (!nombre) continue
+    // Columna B (índice 1) es el nombre
+    const nameCell = ws[XLSX.utils.encode_cell({ r, c: 1 })]
+    if (!nameCell || !looksLikeName(nameCell.v)) continue
+    const nombre = String(nameCell.v).trim()
 
-    const nums: number[] = []
+    // Talla en columna A (índice 0)
+    const tallaCell = ws[XLSX.utils.encode_cell({ r, c: 0 })]
+    const talla = tallaCell && TALLAS.has(String(tallaCell.v ?? '').toUpperCase())
+      ? String(tallaCell.v).toUpperCase() : undefined
+
+    // Leer todas las columnas C en adelante
+    const allNums: { col: number; val: number }[] = []
+    for (let c = 2; c <= range.e.c; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })]
+      if (!cell) continue
+      // Usar valor calculado si es fórmula, si no el valor directo
+      const val = cell.t === 'n' ? cell.v : (typeof cell.v === 'number' ? cell.v : null)
+      if (val != null && val > 0) allNums.push({ col: c, val })
+    }
+
+    if (allNums.length === 0) continue
+
+    // Leer textos para tipo habitación y sección
     const txts: string[] = []
-    for (let c = nameCol + 1; c <= range.e.c; c++) {
+    for (let c = 2; c <= range.e.c; c++) {
       const cell = ws[XLSX.utils.encode_cell({ r, c })]
-      if (!cell || cell.v == null) continue
-      if (typeof cell.v === 'number' && cell.v > 0) nums.push(cell.v)
-      else if (typeof cell.v === 'string' && cell.v.trim()) txts.push(cell.v.trim())
+      if (cell && typeof cell.v === 'string' && cell.v.trim()) txts.push(cell.v.trim())
     }
 
-    if (nums.length === 0) continue
+    // Estructura: [abono1, abono2, ...abonoN, totalPagado, totalCosto, saldoPendiente]
+    // totalPagado = SUM de abonos, totalCosto = costo total, saldoPendiente = totalCosto - totalPagado
+    let totalPagado = 0, totalCosto = 0, saldoPendiente = 0
+    const abonos: number[] = []
 
-    let tp = 0, tc = 0, sp = 0
-    const ab: number[] = []
-    if (nums.length >= 3) {
-      sp = nums[nums.length - 1]
-      tc = nums[nums.length - 2]
-      tp = nums[nums.length - 3]
-      ab.push(...nums.slice(0, nums.length - 3))
-    } else if (nums.length === 2) {
-      tp = nums[0]; tc = nums[1]; sp = Math.max(0, tc - tp)
+    if (allNums.length >= 3) {
+      // Últimos 3: totalPagado (suma), totalCosto, saldoPendiente
+      saldoPendiente = allNums[allNums.length - 1].val
+      totalCosto = allNums[allNums.length - 2].val
+      totalPagado = allNums[allNums.length - 3].val
+      // Los anteriores son los abonos individuales
+      abonos.push(...allNums.slice(0, allNums.length - 3).map(n => n.val))
+    } else if (allNums.length === 2) {
+      totalPagado = allNums[0].val
+      totalCosto = allNums[1].val
+      saldoPendiente = Math.max(0, totalCosto - totalPagado)
     } else {
-      tp = nums[0]
+      totalPagado = allNums[0].val
     }
 
     const tipoRaw = txts.find(s => TIPO_MAP[s.toUpperCase().replace(/Á/g, 'A')])
     const tipo = tipoRaw ? TIPO_MAP[tipoRaw.toUpperCase().replace(/Á/g, 'A')] : undefined
-    const talla = txts.find(s => TALLAS.has(s.toUpperCase()))
     const celular = txts.find(s => /^\d[\d\s\-\.]{5,}$/.test(s))
     const sec = seccion ?? txts.find(s =>
       !TIPO_MAP[s.toUpperCase().replace(/Á/g, 'A')] &&
@@ -92,14 +104,17 @@ function processSheet(ws: XLSX.WorkSheet, seccion?: string): object[] {
     viajeros.push({
       nombre, talla, celular,
       tipo_habitacion: tipo, seccion_boleto: sec,
-      total_pagado: tp, total_costo: tc, saldo_pendiente: sp, abonos: ab
+      total_pagado: totalPagado,
+      total_costo: totalCosto,
+      saldo_pendiente: saldoPendiente,
+      abonos
     })
   }
   return viajeros
 }
 
 function parseExcelBuffer(buffer: ArrayBuffer, filename: string) {
-  const wb = XLSX.read(buffer, { type: 'array' })
+  const wb = XLSX.read(buffer, { type: 'array', cellFormula: false, cellNF: false })
   const nombre = filename.replace(/\.xlsx?$/i, '').replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase())
 
