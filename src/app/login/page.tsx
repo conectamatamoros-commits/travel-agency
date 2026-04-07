@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Bus, Loader2, Lock, Mail } from 'lucide-react'
+import { Loader2, Lock, Mail } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -28,17 +29,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" 
+    <div className="min-h-screen flex items-center justify-center p-4"
       style={{ background: 'linear-gradient(135deg, #06101f 0%, #1a3a6b 50%, #102445 100%)' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4"
-            style={{ background: 'rgba(201, 162, 39, 0.2)', border: '2px solid #c9a227' }}>
-            <Bus className="w-10 h-10" style={{ color: '#c9a227' }} />
+          <div className="inline-flex items-center justify-center mb-2">
+            <Image
+              src="/blanco con negro.png"
+              alt="Conecta Matamoros"
+              width={220}
+              height={80}
+              className="object-contain"
+              style={{ filter: 'brightness(0) invert(1)' }}
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white">Conecta Matamoros</h1>
-          <p className="mt-1" style={{ color: '#c9a227' }}>Agencia de Viajes</p>
+          <p className="text-sm mt-2" style={{ color: '#c9a227' }}>Panel de Agencia de Viajes</p>
         </div>
 
         {/* Card */}
@@ -77,7 +83,7 @@ export default function LoginPage() {
           </form>
         </div>
         
-        <p className="text-center text-sm mt-6" style={{ color: 'rgba(201,162,39,0.7)' }}>
+        <p className="text-center text-xs mt-6" style={{ color: 'rgba(201,162,39,0.6)' }}>
           © 2026 Conecta Matamoros · Todos los derechos reservados
         </p>
       </div>
