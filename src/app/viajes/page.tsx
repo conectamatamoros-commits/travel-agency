@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import Link from 'next/link'
 import { Bus, Users, CreditCard, ChevronRight, Plus, Calendar } from 'lucide-react'
+import NuevoViajeButton from './NuevoViajeButton'
 
 function formatMXN(n: number) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
@@ -16,7 +17,6 @@ export default async function ViajesPage() {
   const { data: profile } = await supabase.from('user_profiles').select('nombre,rol').eq('id', user.id).single()
   const { data: viajes } = await supabase.from('viajes').select('*').eq('activo', true).order('created_at', { ascending: false })
 
-  // For each viaje get stats
   const viajeIds = viajes?.map(v => v.id) ?? []
   const { data: viajeroStats } = await supabase
     .from('viajeros')
@@ -43,35 +43,37 @@ export default async function ViajesPage() {
               <h1 className="text-2xl font-bold text-gray-900">Viajes</h1>
               <p className="text-gray-500 mt-1">{viajes?.length ?? 0} viajes registrados</p>
             </div>
-            <Link href="/importar" className="btn-primary">
-              <Plus className="w-4 h-4" />
-              Importar Excel
-            </Link>
+            <div className="flex gap-2">
+              <NuevoViajeButton />
+              <Link href="/importar" className="btn-secondary">
+                <Plus className="w-4 h-4" /> Importar Excel
+              </Link>
+            </div>
           </div>
 
           {(!viajes || viajes.length === 0) ? (
             <div className="card p-16 text-center">
               <Bus className="w-14 h-14 mx-auto text-gray-300 mb-4" />
               <h3 className="font-semibold text-gray-700 text-lg mb-2">Sin viajes registrados</h3>
-              <p className="text-gray-400 mb-6">Importa tus archivos Excel para comenzar</p>
-              <Link href="/importar" className="btn-primary">Importar Excel</Link>
+              <p className="text-gray-400 mb-6">Crea un viaje manualmente o importa un Excel</p>
+              <div className="flex gap-3 justify-center">
+                <NuevoViajeButton />
+                <Link href="/importar" className="btn-secondary">Importar Excel</Link>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {viajes.map(viaje => {
                 const stats = statsMap.get(viaje.id) ?? { total: 0, activos: 0, recaudado: 0, pendiente: 0 }
-                const pct = stats.recaudado + stats.pendiente > 0 
+                const pct = stats.recaudado + stats.pendiente > 0
                   ? Math.round((stats.recaudado / (stats.recaudado + stats.pendiente)) * 100) : 0
 
                 return (
                   <Link key={viaje.id} href={`/viajes/${viaje.id}`}
                     className="card p-5 hover:shadow-md transition-all group flex items-center gap-6">
-                    {/* Icon */}
                     <div className="w-12 h-12 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
                       <Bus className="w-6 h-6 text-brand-600" />
                     </div>
-
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div>
@@ -117,7 +119,7 @@ export default async function ViajesPage() {
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-brand-400 flex-shrink-0 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-brand-400 flex-shrink-0" />
                   </Link>
                 )
               })}
