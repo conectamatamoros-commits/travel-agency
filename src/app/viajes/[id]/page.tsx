@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Bus, Users, CreditCard, BedDouble, ChevronLeft, Phone, Mail, MessageSquare, CheckCircle, Clock } from 'lucide-react'
 import EliminarViajeButton from './EliminarViajeButton'
+import CalendarioPagos from '@/components/CalendarioPagos'
 
 function formatMXN(n: number) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
@@ -83,6 +84,16 @@ export default async function ViajeDetailPage({ params }: { params: { id: string
             <p className="text-xs text-gray-500 mt-0.5">{label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Calendario de pagos */}
+      <div className="card mb-6">
+        <div className="p-4 border-b border-gray-100">
+          <h2 className="font-semibold text-gray-900 text-sm">Calendario de pagos</h2>
+        </div>
+        <div className="p-4">
+          <CalendarioPagos viajeId={params.id} isAdmin={true} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
