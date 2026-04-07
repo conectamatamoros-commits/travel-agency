@@ -38,6 +38,15 @@ const ORDEN_ABONOS: TipoAbono[] = [
   "liquidacion",
 ];
 
+const TIPOS_ABONO: { value: TipoAbono; label: string }[] = [
+  { value: "reservacion", label: "Reservación" },
+  { value: "abono_1", label: "Abono 1" },
+  { value: "abono_2", label: "Abono 2" },
+  { value: "abono_3", label: "Abono 3" },
+  { value: "abono_4", label: "Abono 4" },
+  { value: "liquidacion", label: "Liquidación" },
+];
+
 const ESTADO_CONFIG: Record<
   EstadoPago,
   { label: string; color: string; bg: string; dot: string }
@@ -77,6 +86,15 @@ function formatMonto(monto: number) {
   }).format(monto);
 }
 
+const FORM_VACIO = {
+  tipo_abono: "reservacion" as TipoAbono,
+  nombre_abono: "Reservación",
+  fecha_limite: "",
+  monto: "",
+  estado: "pendiente" as EstadoPago,
+  fecha_pago: "",
+};
+
 export default function CalendarioPagos({
   viajeId,
   isAdmin = false,
@@ -91,6 +109,10 @@ export default function CalendarioPagos({
     tipo: "exito" | "error";
     texto: string;
   } | null>(null);
+
+  const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false);
+  const [nuevoAbono, setNuevoAbono] = useState(FORM_VACIO);
+  const [agregando, setAgregando] = useState(false);
 
   useEffect(() => {
     cargarAbonos();
@@ -113,6 +135,40 @@ export default function CalendarioPagos({
       setAbonos(ordenados);
     }
     setLoading(false);
+  }
+
+  function handleTipoChange(tipo: TipoAbono) {
+    const label = TIPOS_ABONO.find((t) => t.value === tipo)?.label ?? "";
+    setNuevoAbono({ ...nuevoAbono, tipo_abono: tipo, nombre_abono: label });
+  }
+
+  async function agregarAbono() {
+    if (!nuevoAbono.fecha_limite || !nuevoAbono.monto) {
+      setMensaje({ tipo: "error", texto: "Completa la fecha y el monto." });
+      setTimeout(() => setMensaje(null), 3000);
+      return;
+    }
+    setAgregando(true);
+    const { error } = await supabase.from("calendario_pagos").insert({
+      viaje_id: viajeId,
+      tipo_abono: nuevoAbono.tipo_abono,
+      nombre_abono: nuevoAbono.nombre_abono,
+      fecha_limite: nuevoAbono.fecha_limite,
+      monto: parseFloat(nuevoAbono.monto as string),
+      estado: nuevoAbono.estado,
+      fecha_pago: nuevoAbono.estado === "pagado" ? nuevoAbono.fecha_pago || null : null,
+    });
+
+    if (error) {
+      setMensaje({ tipo: "error", texto: "Error al agregar el abono." });
+    } else {
+      setMensaje({ tipo: "exito", texto: "Abono agregado correctamente." });
+      setNuevoAbono(FORM_VACIO);
+      setMostrarFormNuevo(false);
+      await cargarAbonos();
+    }
+    setAgregando(false);
+    setTimeout(() => setMensaje(null), 3000);
   }
 
   function iniciarEdicion(abono: AbonoPago) {
@@ -140,8 +196,7 @@ export default function CalendarioPagos({
         fecha_limite: editForm.fecha_limite,
         monto: editForm.monto,
         estado: editForm.estado,
-        fecha_pago:
-          editForm.estado === "pagado" ? editForm.fecha_pago : null,
+        fecha_pago: editForm.estado === "pagado" ? editForm.fecha_pago : null,
       })
       .eq("id", id);
 
@@ -156,13 +211,21 @@ export default function CalendarioPagos({
     setTimeout(() => setMensaje(null), 3000);
   }
 
+  async function eliminarAbono(id: string) {
+    if (!confirm("¿Eliminar este abono?")) return;
+    const { error } = await supabase.from("calendario_pagos").delete().eq("id", id);
+    if (!error) {
+      await cargarAbonos();
+      setMensaje({ tipo: "exito", texto: "Abono eliminado." });
+      setTimeout(() => setMensaje(null), 3000);
+    }
+  }
+
   const proximoAbono = abonos.find((a) => a.estado === "pendiente");
-  const totalPagado = abonos
-    .filter((a) => a.estado === "pagado")
-    .reduce((sum, a) => sum + a.monto, 0);
-  const totalPendiente = abonos
-    .filter((a) => a.estado !== "pagado")
-    .reduce((sum, a) => sum + a.monto, 0);
+  const totalPagado = abonos.filter((a) => a.estado === "pagado").reduce((sum, a) => sum + a.monto, 0);
+  const totalPendiente = abonos.filter((a) => a.estado !== "pagado").reduce((sum, a) => sum + a.monto, 0);
+  const tiposUsados = new Set(abonos.map((a) => a.tipo_abono));
+  const tiposDisponibles = TIPOS_ABONO.filter((t) => !tiposUsados.has(t.value));
 
   if (loading) {
     return (
@@ -175,38 +238,28 @@ export default function CalendarioPagos({
   return (
     <div className="space-y-4">
       {/* Resumen */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <p className="text-xs text-green-600 font-medium mb-1">Pagado</p>
-          <p className="text-lg font-semibold text-green-800">
-            {formatMonto(totalPagado)}
-          </p>
+      {abonos.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p className="text-xs text-green-600 font-medium mb-1">Pagado</p>
+            <p className="text-lg font-semibold text-green-800">{formatMonto(totalPagado)}</p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="text-xs text-amber-600 font-medium mb-1">Pendiente</p>
+            <p className="text-lg font-semibold text-amber-800">{formatMonto(totalPendiente)}</p>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p className="text-xs text-blue-600 font-medium mb-1">Próximo abono</p>
+            <p className="text-sm font-semibold text-blue-800">
+              {proximoAbono ? formatFecha(proximoAbono.fecha_limite) : "—"}
+            </p>
+          </div>
         </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-xs text-amber-600 font-medium mb-1">Pendiente</p>
-          <p className="text-lg font-semibold text-amber-800">
-            {formatMonto(totalPendiente)}
-          </p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-xs text-blue-600 font-medium mb-1">
-            Próximo abono
-          </p>
-          <p className="text-sm font-semibold text-blue-800">
-            {proximoAbono ? formatFecha(proximoAbono.fecha_limite) : "—"}
-          </p>
-        </div>
-      </div>
+      )}
 
-      {/* Mensaje de éxito o error */}
+      {/* Mensaje */}
       {mensaje && (
-        <div
-          className={`rounded-lg px-4 py-3 text-sm font-medium ${
-            mensaje.tipo === "exito"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
+        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${mensaje.tipo === "exito" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
           {mensaje.texto}
         </div>
       )}
@@ -214,84 +267,56 @@ export default function CalendarioPagos({
       {/* Lista de abonos */}
       <div className="space-y-2">
         {abonos.length === 0 && (
-          <p className="text-center text-gray-400 py-8 text-sm">
-            No hay abonos registrados para este viaje.
+          <p className="text-center text-gray-400 py-6 text-sm">
+            No hay abonos registrados. Agrega el primero.
           </p>
         )}
 
         {abonos.map((abono, idx) => {
           const config = ESTADO_CONFIG[abono.estado];
-          const esProximo =
-            proximoAbono?.id === abono.id && abono.estado === "pendiente";
+          const esProximo = proximoAbono?.id === abono.id;
           const editando = editandoId === abono.id;
 
           return (
             <div
               key={abono.id}
-              className={`rounded-xl border p-4 transition-all ${
-                esProximo
-                  ? "border-blue-300 bg-blue-50 ring-1 ring-blue-200"
-                  : "border-gray-200 bg-white"
-              }`}
+              className={`rounded-xl border p-4 transition-all ${esProximo ? "border-blue-300 bg-blue-50 ring-1 ring-blue-200" : "border-gray-200 bg-white"}`}
             >
               {editando ? (
-                /* Formulario de edición */
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Nombre del abono
-                      </label>
+                      <label className="text-xs text-gray-500 mb-1 block">Nombre</label>
                       <input
                         type="text"
                         value={editForm.nombre_abono || ""}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, nombre_abono: e.target.value })
-                        }
+                        onChange={(e) => setEditForm({ ...editForm, nombre_abono: e.target.value })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Fecha límite
-                      </label>
+                      <label className="text-xs text-gray-500 mb-1 block">Fecha límite</label>
                       <input
                         type="date"
                         value={editForm.fecha_limite || ""}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, fecha_limite: e.target.value })
-                        }
+                        onChange={(e) => setEditForm({ ...editForm, fecha_limite: e.target.value })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Monto (MXN)
-                      </label>
+                      <label className="text-xs text-gray-500 mb-1 block">Monto (MXN)</label>
                       <input
                         type="number"
                         value={editForm.monto || ""}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            monto: parseFloat(e.target.value),
-                          })
-                        }
+                        onChange={(e) => setEditForm({ ...editForm, monto: parseFloat(e.target.value) })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Estado
-                      </label>
+                      <label className="text-xs text-gray-500 mb-1 block">Estado</label>
                       <select
                         value={editForm.estado || "pendiente"}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            estado: e.target.value as EstadoPago,
-                          })
-                        }
+                        onChange={(e) => setEditForm({ ...editForm, estado: e.target.value as EstadoPago })}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="pendiente">Pendiente</option>
@@ -301,15 +326,11 @@ export default function CalendarioPagos({
                     </div>
                     {editForm.estado === "pagado" && (
                       <div className="col-span-2">
-                        <label className="text-xs text-gray-500 mb-1 block">
-                          Fecha de pago real
-                        </label>
+                        <label className="text-xs text-gray-500 mb-1 block">Fecha de pago real</label>
                         <input
                           type="date"
                           value={editForm.fecha_pago || ""}
-                          onChange={(e) =>
-                            setEditForm({ ...editForm, fecha_pago: e.target.value })
-                          }
+                          onChange={(e) => setEditForm({ ...editForm, fecha_pago: e.target.value })}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
@@ -332,7 +353,6 @@ export default function CalendarioPagos({
                   </div>
                 </div>
               ) : (
-                /* Vista normal */
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500">
@@ -340,9 +360,7 @@ export default function CalendarioPagos({
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900 text-sm truncate">
-                          {abono.nombre_abono}
-                        </p>
+                        <p className="font-medium text-gray-900 text-sm truncate">{abono.nombre_abono}</p>
                         {esProximo && (
                           <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium flex-shrink-0">
                             Próximo
@@ -351,44 +369,37 @@ export default function CalendarioPagos({
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
                         Fecha límite: {formatFecha(abono.fecha_limite)}
-                        {abono.fecha_pago &&
-                          ` · Pagado: ${formatFecha(abono.fecha_pago)}`}
+                        {abono.fecha_pago && ` · Pagado: ${formatFecha(abono.fecha_pago)}`}
                       </p>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <p className="font-semibold text-gray-800 text-sm">
-                      {formatMonto(abono.monto)}
-                    </p>
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${config.bg} ${config.color}`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${config.dot}`}
-                      />
+                    <p className="font-semibold text-gray-800 text-sm">{formatMonto(abono.monto)}</p>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${config.bg} ${config.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
                       {config.label}
                     </span>
                     {isAdmin && (
-                      <button
-                        onClick={() => iniciarEdicion(abono)}
-                        className="text-gray-400 hover:text-blue-600 transition p-1 rounded-lg hover:bg-blue-50"
-                        title="Editar abono"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => iniciarEdicion(abono)}
+                          className="text-gray-400 hover:text-blue-600 transition p-1 rounded-lg hover:bg-blue-50"
+                          title="Editar"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => eliminarAbono(abono.id)}
+                          className="text-gray-400 hover:text-red-500 transition p-1 rounded-lg hover:bg-red-50"
+                          title="Eliminar"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -397,6 +408,111 @@ export default function CalendarioPagos({
           );
         })}
       </div>
+
+      {/* Botón / formulario nuevo abono */}
+      {isAdmin && tiposDisponibles.length > 0 && (
+        <div>
+          {!mostrarFormNuevo ? (
+            <button
+              onClick={() => {
+                setMostrarFormNuevo(true);
+                setNuevoAbono({ ...FORM_VACIO, tipo_abono: tiposDisponibles[0].value, nombre_abono: tiposDisponibles[0].label });
+              }}
+              className="w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm text-gray-400 hover:border-blue-300 hover:text-blue-500 transition font-medium"
+            >
+              + Agregar abono
+            </button>
+          ) : (
+            <div className="border border-blue-200 bg-blue-50 rounded-xl p-4 space-y-3">
+              <p className="text-sm font-semibold text-blue-800">Nuevo abono</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Tipo de abono</label>
+                  <select
+                    value={nuevoAbono.tipo_abono}
+                    onChange={(e) => handleTipoChange(e.target.value as TipoAbono)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    {tiposDisponibles.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Nombre personalizado</label>
+                  <input
+                    type="text"
+                    value={nuevoAbono.nombre_abono}
+                    onChange={(e) => setNuevoAbono({ ...nuevoAbono, nombre_abono: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Fecha límite</label>
+                  <input
+                    type="date"
+                    value={nuevoAbono.fecha_limite}
+                    onChange={(e) => setNuevoAbono({ ...nuevoAbono, fecha_limite: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Monto (MXN)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={nuevoAbono.monto}
+                    onChange={(e) => setNuevoAbono({ ...nuevoAbono, monto: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Estado</label>
+                  <select
+                    value={nuevoAbono.estado}
+                    onChange={(e) => setNuevoAbono({ ...nuevoAbono, estado: e.target.value as EstadoPago })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="pagado">Pagado</option>
+                    <option value="vencido">Vencido</option>
+                  </select>
+                </div>
+                {nuevoAbono.estado === "pagado" && (
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Fecha de pago real</label>
+                    <input
+                      type="date"
+                      value={nuevoAbono.fecha_pago}
+                      onChange={(e) => setNuevoAbono({ ...nuevoAbono, fecha_pago: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={agregarAbono}
+                  disabled={agregando}
+                  className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+                >
+                  {agregando ? "Agregando..." : "Agregar"}
+                </button>
+                <button
+                  onClick={() => { setMostrarFormNuevo(false); setNuevoAbono(FORM_VACIO); }}
+                  className="flex-1 border border-gray-300 text-gray-600 rounded-lg py-2 text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isAdmin && tiposDisponibles.length === 0 && abonos.length > 0 && (
+        <p className="text-center text-xs text-gray-400 py-2">Todos los tipos de abono han sido agregados.</p>
+      )}
     </div>
   );
 }
