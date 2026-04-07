@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   ChevronLeft, Phone, Mail, BedDouble, CreditCard, 
   User, Calendar, Shirt, Tag, AlertCircle, MessageSquare,
-  CheckCircle, Clock
+  CheckCircle, PhoneCall
 } from 'lucide-react'
 
 function formatMXN(n: number) {
@@ -27,16 +27,10 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
   if (!viajero) notFound()
 
   const { data: abonos } = await supabase
-    .from('abonos')
-    .select('*')
-    .eq('viajero_id', params.id)
-    .order('numero_abono')
+    .from('abonos').select('*').eq('viajero_id', params.id).order('numero_abono')
 
   const { data: contacto } = await supabase
-    .from('contactos_emergencia')
-    .select('*')
-    .eq('viajero_id', params.id)
-    .single()
+    .from('contactos_emergencia').select('*').eq('viajero_id', params.id).single()
 
   const { data: asignacion } = await supabase
     .from('asignaciones_cuarto')
@@ -44,19 +38,11 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
     .eq('viajero_id', params.id)
     .single()
 
-  const { data: mensajes } = await supabase
-    .from('mensajes_log')
-    .select('*')
-    .eq('viajero_id', params.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
-
-  const pct = viajero.total_costo > 0 
+  const pct = viajero.total_costo > 0
     ? Math.min(Math.round((viajero.total_pagado / viajero.total_costo) * 100), 100) : 100
 
-  function openWA() {
-    if (!viajero.celular) return
-    const num = viajero.celular.replace(/\D/g,'')
+  function getWALink(cel: string) {
+    const num = cel.replace(/\D/g,'')
     const mxNum = num.startsWith('52') ? num : `52${num}`
     return `https://wa.me/${mxNum}`
   }
@@ -97,18 +83,20 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                         {viajero.tipo_habitacion && <span className="badge-azul">{viajero.tipo_habitacion}</span>}
                         {viajero.seccion_boleto && <span className="badge-gris">{viajero.seccion_boleto}</span>}
                         {viajero.talla && <span className="badge-gris">Talla: {viajero.talla}</span>}
+                        {viajero.descuento && <span className="badge-amarillo">{viajero.descuento}</span>}
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap justify-end">
                     {viajero.celular && (
-                      <a href={openWA()!} target="_blank"
-                        className="btn-secondary text-green-600 border-green-200 hover:bg-green-50">
+                      <a href={getWALink(viajero.celular)} target="_blank"
+                        className="btn-secondary text-green-600 border-green-200 hover:bg-green-50 text-sm">
                         <Phone className="w-4 h-4" /> WhatsApp
                       </a>
                     )}
                     {viajero.correo && (
-                      <a href={`mailto:${viajero.correo}`} className="btn-secondary text-blue-600 border-blue-200 hover:bg-blue-50">
+                      <a href={`mailto:${viajero.correo}`}
+                        className="btn-secondary text-blue-600 border-blue-200 hover:bg-blue-50 text-sm">
                         <Mail className="w-4 h-4" /> Correo
                       </a>
                     )}
@@ -120,7 +108,9 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   {[
                     { icon: Phone, label: 'Celular', value: viajero.celular },
                     { icon: Mail, label: 'Correo', value: viajero.correo },
-                    { icon: Calendar, label: 'Inscripción', value: viajero.fecha_inscripcion ? new Date(viajero.fecha_inscripcion).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : null },
+                    { icon: Calendar, label: 'Inscripción', value: viajero.fecha_inscripcion 
+                      ? new Date(viajero.fecha_inscripcion).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) 
+                      : null },
                     { icon: Shirt, label: 'Talla', value: viajero.talla },
                     { icon: Tag, label: 'Descuento', value: viajero.descuento },
                     { icon: User, label: 'Ciudadanía', value: viajero.ciudadania },
@@ -141,18 +131,15 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-gray-400" /> Pagos y Abonos
                   </h2>
-                  <Link href={`/pagos?q=${encodeURIComponent(viajero.nombre)}`} className="text-sm text-brand-600">
-                    Gestionar →
-                  </Link>
+                  <Link href={`/pagos`} className="text-sm text-brand-600">Gestionar →</Link>
                 </div>
 
-                {/* Progress */}
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-gray-500">Progreso de pago</span>
                   <span className="font-semibold text-gray-900">{pct}%</span>
                 </div>
                 <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
-                  <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-green-500' : pct > 50 ? 'bg-brand-500' : 'bg-orange-400'}`}
+                  <div className={`h-full rounded-full ${pct >= 100 ? 'bg-green-500' : pct > 50 ? 'bg-brand-500' : 'bg-orange-400'}`}
                     style={{ width: `${pct}%` }} />
                 </div>
 
@@ -169,7 +156,6 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   ))}
                 </div>
 
-                {/* Abonos list */}
                 {abonos && abonos.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -182,6 +168,7 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                           <div>
                             <p className="text-xs text-gray-500">Abono {i + 1}</p>
                             <p className="text-sm font-semibold text-green-700">{formatMXN(a.monto)}</p>
+                            {a.notas && <p className="text-xs text-gray-400">{a.notas}</p>}
                           </div>
                         </div>
                       ))}
@@ -196,28 +183,6 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   </div>
                 )}
               </div>
-
-              {/* Mensajes log */}
-              {mensajes && mensajes.length > 0 && (
-                <div className="card p-6">
-                  <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-gray-400" /> Mensajes enviados
-                  </h2>
-                  <div className="space-y-3">
-                    {mensajes.map(m => (
-                      <div key={m.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${m.tipo === 'whatsapp' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                          {m.tipo === 'whatsapp' ? <Phone className="w-3.5 h-3.5 text-green-600" /> : <Mail className="w-3.5 h-3.5 text-blue-600" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 mb-1">{new Date(m.created_at).toLocaleDateString('es-MX', { dateStyle: 'medium' })}</p>
-                          <p className="text-sm text-gray-700 line-clamp-2">{m.mensaje}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Right sidebar */}
@@ -239,41 +204,54 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   </div>
                 )}
                 <Link href="/cuartos" className="btn-secondary w-full justify-center mt-3 text-sm py-2">
-                  Ir a cuartos
+                  Gestionar cuartos
                 </Link>
               </div>
 
               {/* Contacto emergencia */}
               <div className="card p-5">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-gray-400" /> Contacto de emergencia
+                  <PhoneCall className="w-4 h-4 text-gray-400" /> Contacto de emergencia
                 </h3>
                 {contacto ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {contacto.nombre && (
-                      <div>
-                        <p className="text-xs text-gray-400">Nombre</p>
-                        <p className="text-sm font-medium text-gray-800">{contacto.nombre}</p>
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                        <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-400">Nombre</p>
+                          <p className="text-sm font-medium text-gray-800">{contacto.nombre}</p>
+                        </div>
                       </div>
                     )}
                     {contacto.parentesco && (
-                      <div>
-                        <p className="text-xs text-gray-400">Parentesco</p>
-                        <p className="text-sm font-medium text-gray-800">{contacto.parentesco}</p>
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                        <Tag className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-400">Parentesco</p>
+                          <p className="text-sm font-medium text-gray-800">{contacto.parentesco}</p>
+                        </div>
                       </div>
                     )}
                     {contacto.numero && (
-                      <div>
-                        <p className="text-xs text-gray-400">Número</p>
-                        <a href={`https://wa.me/52${contacto.numero.replace(/\D/g,'')}`} target="_blank"
-                          className="text-sm font-medium text-green-600 hover:underline flex items-center gap-1">
-                          <Phone className="w-3 h-3" /> {contacto.numero}
-                        </a>
+                      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                        <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-400">Número</p>
+                          <a href={getWALink(contacto.numero)} target="_blank"
+                            className="text-sm font-medium text-green-600 hover:underline">
+                            {contacto.numero}
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-400">Sin contacto registrado</p>
+                  <div className="p-4 bg-gray-50 rounded-xl text-center">
+                    <AlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">Sin contacto registrado</p>
+                    <p className="text-xs text-gray-300 mt-1">Se importa desde el Excel</p>
+                  </div>
                 )}
               </div>
 
@@ -290,6 +268,10 @@ export default async function ViajeroDetailPage({ params }: { params: { id: stri
                   <Link href={`/pagos`}
                     className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 text-sm text-gray-700 transition-colors">
                     <CreditCard className="w-4 h-4 text-gray-400" /> Registrar abono
+                  </Link>
+                  <Link href={`/cuartos`}
+                    className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 text-sm text-gray-700 transition-colors">
+                    <BedDouble className="w-4 h-4 text-gray-400" /> Asignar cuarto
                   </Link>
                 </div>
               </div>
