@@ -77,3 +77,5 @@ export default function EliminarViajeButton({ viajeId, viajeNombre }: Props) {
     </button>
   )
 }
+
+
