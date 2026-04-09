@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
+import { BarChart2 } from 'lucide-react'
 import { 
   Bus, LayoutDashboard, Users, CreditCard, 
   BedDouble, CheckSquare, MessageSquare, 
@@ -21,7 +22,8 @@ const navItems = [
   { href: '/cuartos', icon: BedDouble, label: 'Cuartos' },
   { href: '/tareas', icon: CheckSquare, label: 'Tareas' },
   { href: '/mensajes', icon: MessageSquare, label: 'Mensajes' },
-  { href: '/importar', icon: Upload, label: 'Importar' },
+  { href: "/importar", icon: Upload, label: "Importar" },
+  { href: "/reportes", icon: BarChart2, label: "Reportes" },
 ]
 
 const bottomNavItems = [
