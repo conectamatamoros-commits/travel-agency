@@ -182,7 +182,7 @@ export default function ComprobantePago({ viajero, viaje, abono, onClose }: Prop
           {/* Footer */}
           <div style={{ padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '9px', fontFamily: 'Montserrat, sans-serif' }}>
-              Este comprobante es válido como recibo
+              No reembolsos después del primer pago
             </div>
             <div style={{ color: '#e8ff4c', fontSize: '9px', fontWeight: '700', letterSpacing: '1px', fontFamily: 'Montserrat, sans-serif' }}>
               CM ®
