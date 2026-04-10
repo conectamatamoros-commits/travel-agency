@@ -17,34 +17,22 @@ function getAuth() {
 export async function listExcelFiles() {
   const auth = getAuth()
   const drive = google.drive({ version: 'v3', auth })
-  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID
 
-  // Buscar tanto Google Sheets como archivos Excel nativos
+  // Buscar TODOS los archivos compartidos con la cuenta de servicio
   const res = await drive.files.list({
-    q: `'${folderId}' in parents and (mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') and trashed=false`,
+    q: `(mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') and trashed=false`,
     fields: 'files(id, name, modifiedTime, mimeType)',
     orderBy: 'name',
+    spaces: 'drive',
   })
 
   return res.data.files ?? []
 }
 
-export async function getSheetData(fileId: string, mimeType: string) {
+export async function getSheetData(fileId: string) {
   const auth = getAuth()
-  
-  // Si es Excel nativo, exportarlo como Google Sheets primero
-  if (mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-    const drive = google.drive({ version: 'v3', auth })
-    const res = await drive.files.export({
-      fileId,
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    }, { responseType: 'arraybuffer' })
-    
-    // Return raw buffer for xlsx processing
-    return { type: 'xlsx', buffer: res.data as ArrayBuffer }
-  }
-
   const sheets = google.sheets({ version: 'v4', auth })
+
   const meta = await sheets.spreadsheets.get({ spreadsheetId: fileId })
   const sheetNames = meta.data.sheets?.map(s => s.properties?.title ?? '') ?? []
 
@@ -57,5 +45,5 @@ export async function getSheetData(fileId: string, mimeType: string) {
     result[name] = (res.data.values ?? []) as unknown[][]
   }
 
-  return { type: 'sheets', sheetNames, data: result }
+  return { sheetNames, data: result }
 }
