@@ -202,6 +202,11 @@ export default function ComprobantePago({ viajero, viaje, abono, onClose }: Prop
             style={{ background: '#88ea4e', color: '#000000' }}>
             <Share2 className="w-4 h-4" /> WhatsApp
           </button>
+          <button onClick={onClose}
+            className="flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-colors"
+            style={{ background: 'rgba(255,40,59,0.2)', color: '#ff283b', border: '1px solid #ff283b' }}>
+            <X className="w-4 h-4" /> Cerrar
+          </button>
         </div>
       </div>
     </div>
