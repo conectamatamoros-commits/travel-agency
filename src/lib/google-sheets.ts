@@ -1,24 +1,23 @@
 import { google } from 'googleapis'
 
-export async function getGoogleAuth() {
-  const privateKey = (process.env.GOOGLE_PRIVATE_KEY ?? '')
-    .replace(/\\n/g, '\n')
-    .replace(/^"/, '')
-    .replace(/"$/, '')
-
-  const auth = new google.auth.JWT({
-    email: process.env.GOOGLE_CLIENT_EMAIL,
-    key: privateKey,
+function getAuth() {
+  const json = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  if (!json) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON no configurado')
+  
+  const credentials = JSON.parse(json)
+  
+  return new google.auth.JWT({
+    email: credentials.client_email,
+    key: credentials.private_key,
     scopes: [
       'https://www.googleapis.com/auth/spreadsheets',
       'https://www.googleapis.com/auth/drive',
     ],
   })
-  return auth
 }
 
 export async function listExcelFiles() {
-  const auth = await getGoogleAuth()
+  const auth = getAuth()
   const drive = google.drive({ version: 'v3', auth })
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID
 
@@ -32,7 +31,7 @@ export async function listExcelFiles() {
 }
 
 export async function getSheetData(fileId: string) {
-  const auth = await getGoogleAuth()
+  const auth = getAuth()
   const sheets = google.sheets({ version: 'v4', auth })
 
   const meta = await sheets.spreadsheets.get({ spreadsheetId: fileId })
