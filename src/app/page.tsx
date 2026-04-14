@@ -16,15 +16,3 @@ export default function HomePage() {
       htmlFile: '/eventos/informacion-tour-kenia-os.html',
       color: '#ff2d78',
     },
-    {
-      slug: 'arjona',
-      nombre: 'Ricardo Arjona',
-      fecha: 'Próximamente',
-      htmlFile: '/eventos/informacion-tour-arjona.html',
-      color: '#5DCAA5',
-    },
-  ]
-
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="bg-black border-b
