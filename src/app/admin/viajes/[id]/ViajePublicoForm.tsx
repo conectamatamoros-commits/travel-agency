@@ -64,7 +64,7 @@ export default function ViajePublicoForm({ viaje }: ViajePublicoFormProps) {
   const eliminarItem = (campo: 'incluye' | 'no_incluye', index: number) => {
     setFormData({
       ...formData,
-      [campo]: formData[campo].filter((_, i) => i !== index)
+      [campo]: formData[campo].filter((_item: string, i: number) => i !== index)
     })
   }
 
@@ -185,7 +185,7 @@ export default function ViajePublicoForm({ viaje }: ViajePublicoFormProps) {
             ¿Qué incluye?
           </label>
           <div className="space-y-2">
-            {formData.incluye.map((item, index) => (
+            {formData.incluye.map((item: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <span className="flex-1 px-4 py-2 bg-green-50 text-green-700 rounded-lg">
                   ✓ {item}
@@ -227,7 +227,7 @@ export default function ViajePublicoForm({ viaje }: ViajePublicoFormProps) {
             No incluye
           </label>
           <div className="space-y-2">
-            {formData.no_incluye.map((item, index) => (
+            {formData.no_incluye.map((item: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <span className="flex-1 px-4 py-2 bg-red-50 text-red-700 rounded-lg">
                   ✗ {item}
