@@ -24,6 +24,10 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
+  // 🔍 DEBUG - Eliminar después
+  console.log('🔍 Middleware ejecutándose en:', pathname)
+  console.log('🔍 Usuario autenticado:', !!user)
+
   // ✅ RUTAS PÚBLICAS (No requieren autenticación)
   const publicRoutes = [
     '/',                    // Home pública
@@ -39,12 +43,16 @@ export async function middleware(request: NextRequest) {
   // Verificar si la ruta es pública
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
+  console.log('🔍 Es ruta pública?:', isPublicRoute)
+
   // Si es ruta pública, permitir acceso
   if (isPublicRoute) {
     // Si está autenticado y va a /login, redirigir al admin
     if (user && pathname === '/login') {
+      console.log('🔍 Usuario autenticado en /login, redirigiendo a admin')
       return NextResponse.redirect(new URL('/admin/dashboard', request.url))
     }
+    console.log('🔍 Permitiendo acceso a ruta pública')
     return supabaseResponse
   }
 
@@ -52,11 +60,13 @@ export async function middleware(request: NextRequest) {
   // Todo lo que empiece con /admin
   if (pathname.startsWith('/admin')) {
     if (!user) {
+      console.log('🔍 Usuario NO autenticado en ruta admin, redirigiendo a login')
       // No autenticado, redirigir a login
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
+  console.log('🔍 Permitiendo acceso (fin del middleware)')
   return supabaseResponse
 }
 
