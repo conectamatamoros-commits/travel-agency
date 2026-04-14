@@ -210,6 +210,30 @@ body{
   color:#ff283b;
 }
 
+.alert-banner{
+  background:linear-gradient(135deg, #ff283b 0%, #ff4bd1 100%);
+  color:#ffffff;
+  padding:16px;
+  text-align:center;
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:2px;
+  border-bottom:4px solid #ff283b;
+  animation:glow 2s infinite;
+}
+
+.alert-banner .alert-main{
+  font-size:15px;
+  margin-bottom:6px;
+}
+
+.alert-banner .alert-sub{
+  font-size:11px;
+  font-weight:600;
+  opacity:0.95;
+}
+
+
 .zona-detail{
   margin:0 16px 16px;
   border-radius:0;
@@ -542,7 +566,7 @@ body{
     <div class="hero-overlay"></div>
     <div class="hero-top">
       <div class="hero-brand">CONECTA MATAMOROS</div>
-      <div class="hero-badge">OFICIAL</div>
+      <div class="hero-badge">SOLO 3 DIC DISPONIBLE</div>
     </div>
     <div class="hero-content">
       <div class="hero-title">MORAT</div>
@@ -554,6 +578,11 @@ body{
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab(this,'boletos')">BOLETOS</button>
     <button class="nav-tab" onclick="switchTab(this,'paquetes')">PAQUETES</button>
+  </div>
+
+  <div class="alert-banner">
+    <div class="alert-main">⚠️ FECHA 2 DE DICIEMBRE AGOTADA</div>
+    <div class="alert-sub">✅ DISPONIBLE ÚNICAMENTE: 3 DE DICIEMBRE</div>
   </div>
 
   <div id="boletos" class="panel active">
@@ -655,19 +684,16 @@ const secciones=[
     {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$7,000"},
   ]},
   {nombre:"Coke Studio",num:"Sección 106b",color:"#5DCAA5",img:IMG_COKE,precios:[
-    {tipo:"Cuádruple",det:"4 personas · 2 camas matrimoniales",monto:"$6,150"},
-    {tipo:"Triple",det:"3 personas · 2 camas matrimoniales",monto:"$6,350"},
-    {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$6,700"},
+    {tipo:"Cuádruple",det:"4 personas · 2 camas matrimoniales",monto:"$6,300"},
+    {tipo:"Triple",det:"3 personas · 2 camas matrimoniales",monto:"$6,500"},
+    {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$6,600"},
+    {tipo:"Individual",det:"1 persona · 1 cama matrimonial",monto:"$7,850"},
   ]},
-  {nombre:"Banco Azteca",num:"Sección 113b",color:"#EF9F27",img:IMG_BANCO,precios:[
-    {tipo:"Cuádruple",det:"4 personas · 2 camas matrimoniales",monto:"$5,850"},
-    {tipo:"Triple",det:"3 personas · 2 camas matrimoniales",monto:"$6,050"},
-    {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$6,400"},
-  ]},
-  {nombre:"Barrera",num:"Zona Barrera",color:"#ff2d78",img:null,precios:[
-    {tipo:"Cuádruple",det:"4 personas · 2 camas matrimoniales",monto:"$5,450"},
-    {tipo:"Triple",det:"3 personas · 2 camas matrimoniales",monto:"$5,650"},
-    {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$6,000"},
+  {nombre:"Doritos",num:"Zona Doritos",color:"#ff2d78",img:null,precios:[
+    {tipo:"Cuádruple",det:"4 personas · 2 camas matrimoniales",monto:"$6,300"},
+    {tipo:"Triple",det:"3 personas · 2 camas matrimoniales",monto:"$6,500"},
+    {tipo:"Doble",det:"2 personas · 1 cama matrimonial",monto:"$6,600"},
+    {tipo:"Individual",det:"1 persona · 1 cama matrimonial",monto:"$7,850"},
   ]},
 ];
 
