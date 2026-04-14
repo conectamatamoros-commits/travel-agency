@@ -9,15 +9,36 @@ interface Viajero {
   celular: string
   correo: string
   viaje_id: string
-  viajes?: {
+  total_pagado?: number
+  saldo_pendiente?: number
+  tipo_habitacion?: string
+  seccion_boleto?: string
+  viaje?: Array<{
     nombre: string
-  }
+  }>
 }
 
-export default function MensajesClient({ viajeros: initialViajeros }: { viajeros: Viajero[] }) {
+interface Viaje {
+  id: string
+  nombre: string
+}
+
+interface MensajesClientProps {
+  viajeros: Viajero[]
+  viajes: Viaje[]
+  mensajesLog: any[]
+  currentUserId: string
+  initialViaje?: string
+}
+
+export default function MensajesClient({ 
+  viajeros: initialViajeros, 
+  viajes: allViajes,
+  initialViaje 
+}: MensajesClientProps) {
   const supabase = createClient()
   const [viajeros] = useState(initialViajeros)
-  const [selectedViaje, setSelectedViaje] = useState<string>('all')
+  const [selectedViaje, setSelectedViaje] = useState<string>(initialViaje || 'all')
   const [messageType, setMessageType] = useState<'whatsapp' | 'email'>('whatsapp')
   const [template, setTemplate] = useState<string>('recordatorio')
   const [customMessage, setCustomMessage] = useState('')
@@ -31,17 +52,19 @@ export default function MensajesClient({ viajeros: initialViajeros }: { viajeros
     custom: customMessage
   }
 
-  const viajes = Array.from(new Set(viajeros.map(v => v.viajes?.nombre).filter(Boolean)))
-
   const filteredViajeros = selectedViaje === 'all' 
     ? viajeros 
-    : viajeros.filter(v => v.viajes?.nombre === selectedViaje)
+    : viajeros.filter(v => {
+        const viajeNombre = v.viaje?.[0]?.nombre
+        return viajeNombre === selectedViaje
+      })
 
   const getMessage = (viajero: Viajero) => {
     const message = templates[template as keyof typeof templates] || customMessage
+    const viajeNombre = viajero.viaje?.[0]?.nombre || 'tu viaje'
     return message
       .replace('{nombre}', viajero.nombre)
-      .replace('{viaje}', viajero.viajes?.nombre || 'tu viaje')
+      .replace('{viaje}', viajeNombre)
   }
 
   const sendWhatsApp = async (viajero: Viajero) => {
@@ -70,7 +93,8 @@ export default function MensajesClient({ viajeros: initialViajeros }: { viajeros
 
     setSending(viajero.id)
     const message = getMessage(viajero)
-    const subject = `Información sobre tu viaje - ${viajero.viajes?.nombre || 'Conecta Matamoros'}`
+    const viajeNombre = viajero.viaje?.[0]?.nombre || 'Conecta Matamoros'
+    const subject = `Información sobre tu viaje - ${viajeNombre}`
     const mailtoUrl = `mailto:${viajero.correo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`
     
     window.open(mailtoUrl, '_blank')
@@ -102,8 +126,8 @@ export default function MensajesClient({ viajeros: initialViajeros }: { viajeros
               className="w-full px-4 py-2 border rounded-lg"
             >
               <option value="all">Todos los viajes</option>
-              {viajes.map(viaje => (
-                <option key={viaje} value={viaje}>{viaje}</option>
+              {allViajes.map(viaje => (
+                <option key={viaje.id} value={viaje.nombre}>{viaje.nombre}</option>
               ))}
             </select>
           </div>
@@ -151,7 +175,10 @@ export default function MensajesClient({ viajeros: initialViajeros }: { viajeros
         <div className="bg-gray-50 p-4 rounded">
           <p className="text-sm font-medium mb-2">Vista previa:</p>
           <p className="text-sm text-gray-700">
-            {getMessage(filteredViajeros[0] || { nombre: 'Juan', viajes: { nombre: 'Ejemplo' } } as Viajero)}
+            {getMessage(filteredViajeros[0] || { 
+              nombre: 'Juan', 
+              viaje: [{ nombre: 'Ejemplo' }] 
+            } as Viajero)}
           </p>
         </div>
       </div>
@@ -175,7 +202,7 @@ export default function MensajesClient({ viajeros: initialViajeros }: { viajeros
                     <div className="text-sm font-medium text-gray-900">{viajero.nombre}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{viajero.viajes?.nombre}</div>
+                    <div className="text-sm text-gray-500">{viajero.viaje?.[0]?.nombre}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
