@@ -149,16 +149,15 @@ export default async function HomePage() {
 // Componente Card de Viaje
 function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) {
   return (
-    <Link href={`/${viaje.slug}`}>
+    <a href={`/${viaje.slug}`}>
       <div className={`group cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 ${pasado ? 'opacity-75' : ''}`}>
         {/* Imagen */}
         <div className="relative h-64 bg-gray-200 overflow-hidden">
           {viaje.imagen_portada ? (
-            <Image
+            <img
               src={viaje.imagen_portada}
               alt={viaje.nombre}
-              fill
-              className="object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
@@ -204,6 +203,6 @@ function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) 
           </button>
         </div>
       </div>
-    </Link>
+    </a>
   )
 }
