@@ -1,13 +1,3 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-
-export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect('/login')
-  }
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Bus, Users, CreditCard, TrendingUp, AlertCircle, CheckCircle, Clock, BedDouble } from 'lucide-react'
