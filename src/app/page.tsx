@@ -1,15 +1,16 @@
+// src/app/page.tsx
+// ACTUALIZACIÓN: Las tarjetas ahora abren los HTMLs estáticos en /eventos/
+
 import { createClient } from '@/lib/supabase/server'
 import Image from 'next/image'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-export const revalidate = 60 // Revalidar cada 60 segundos
+export const revalidate = 60
 
 export default async function HomePage() {
   const supabase = await createClient()
   
-  // Obtener viajes públicos ordenados por fecha
   const { data: viajes, error } = await supabase
     .from('viajes')
     .select('*')
@@ -21,7 +22,6 @@ export default async function HomePage() {
     console.error('Error al cargar viajes:', error)
   }
 
-  // Separar viajes próximos y pasados
   const hoy = new Date()
   const viajesProximos = viajes?.filter(v => new Date(v.fecha_evento) >= hoy) || []
   const viajesPasados = viajes?.filter(v => new Date(v.fecha_evento) < hoy) || []
@@ -45,12 +45,12 @@ export default async function HomePage() {
                 <p className="text-sm text-gray-300">Agencia de Viajes</p>
               </div>
             </div>
-            <Link 
+            <a 
               href="/admin"
               className="text-xs text-gray-400 hover:text-white transition-colors"
             >
               Admin
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -146,10 +146,13 @@ export default async function HomePage() {
   )
 }
 
-// Componente Card de Viaje
 function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) {
   return (
-    <Link href={`/viaje/${viaje.slug}`}>
+    <a 
+      href={`/eventos/${viaje.slug}.html`} 
+      target="_blank"
+      className="block"
+    >
       <div className={`group cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 ${pasado ? 'opacity-75' : ''}`}>
         {/* Imagen */}
         <div className="relative h-64 bg-gray-200 overflow-hidden">
@@ -204,6 +207,6 @@ function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) 
           </button>
         </div>
       </div>
-    </Link>
+    </a>
   )
 }
