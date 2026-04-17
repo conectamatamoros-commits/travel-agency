@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -19,23 +20,26 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
-
+  
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  // Rutas públicas - sin autenticación
+  // Rutas públicas - NO requieren autenticación
   if (
-    pathname.startsWith('/login') ||
+    pathname === '/' ||                    // ✅ Home pública
+    pathname.startsWith('/viaje/') ||      // ✅ Detalle de viajes públicos
+    pathname.startsWith('/login') ||       
     pathname.startsWith('/api') ||
     pathname.endsWith('.html')
   ) {
+    // Si el usuario está logueado e intenta ir a /login, redirigir a dashboard
     if (user && pathname === '/login') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     return supabaseResponse
   }
 
-  // Rutas protegidas
+  // Rutas protegidas - requieren autenticación
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
