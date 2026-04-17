@@ -27,6 +27,7 @@ export default async function ViajePage({ params }: Props) {
     notFound()
   }
 
+  // Obtener precios desde la tabla si existe, o usar un objeto por defecto
   const precios = viaje.precios || {
     doble: 0,
     triple: 0,
@@ -34,9 +35,9 @@ export default async function ViajePage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Fijo */}
-      <header className="bg-black text-white py-4 sticky top-0 z-50 shadow-lg">
+    <div className="min-h-screen" style={{ backgroundColor: '#000000' }}>
+      {/* Header Fijo con colores de marca */}
+      <header className="text-white py-4 sticky top-0 z-50 shadow-lg" style={{ backgroundColor: '#000000', borderBottom: '3px solid #0000cd' }}>
         <div className="container mx-auto px-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Image 
@@ -46,14 +47,15 @@ export default async function ViajePage({ params }: Props) {
               height={40}
               className="rounded-lg"
             />
-            <span className="font-bold text-lg">← Volver</span>
+            <span className="font-bold text-lg" style={{ color: '#e8ff4c' }}>← Volver</span>
           </Link>
           
           {viaje.whatsapp_inscripcion && (
             <a 
               href={viaje.whatsapp_inscripcion}
               target="_blank"
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2"
+              className="px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2"
+              style={{ backgroundColor: '#88ea4e', color: '#000000' }}
             >
               <span>📱</span>
               <span className="hidden md:inline">Inscríbete Ahora</span>
@@ -64,7 +66,7 @@ export default async function ViajePage({ params }: Props) {
       </header>
 
       {/* Hero Image */}
-      <div className="relative h-[50vh] md:h-[60vh] bg-gray-900">
+      <div className="relative h-[50vh] md:h-[60vh]" style={{ backgroundColor: '#000000' }}>
         {viaje.imagen_portada ? (
           <Image
             src={viaje.imagen_portada}
@@ -74,24 +76,30 @@ export default async function ViajePage({ params }: Props) {
             priority
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center">
+          <div 
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #0000cd 0%, #ff4bd1 50%, #e8ff4c 100%)'
+            }}
+          >
             <span className="text-white text-9xl">🎵</span>
           </div>
         )}
         
+        {/* Overlay con título */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex items-end">
           <div className="container mx-auto px-4 pb-12">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4" style={{ color: '#e8ff4c' }}>
               {viaje.nombre}
             </h1>
             <div className="flex flex-wrap gap-4 text-white">
-              <div className="flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(0, 0, 205, 0.8)' }}>
                 <span className="text-xl">📅</span>
                 <span className="font-bold">
                   {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d 'de' MMMM, yyyy", { locale: es }) : 'Fecha por confirmar'}
                 </span>
               </div>
-              <div className="flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255, 75, 209, 0.8)' }}>
                 <span className="text-xl">📍</span>
                 <span className="font-bold">{viaje.ciudad || 'Ciudad por confirmar'}</span>
               </div>
@@ -107,8 +115,8 @@ export default async function ViajePage({ params }: Props) {
           {/* Descripción */}
           {viaje.descripcion && (
             <section className="mb-12">
-              <div className="bg-gradient-to-r from-blue-50 to-pink-50 p-8 rounded-2xl">
-                <p className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="p-8 rounded-2xl" style={{ backgroundColor: '#ffffff', border: '3px solid #0000cd' }}>
+                <p className="text-lg leading-relaxed whitespace-pre-line" style={{ color: '#000000' }}>
                   {viaje.descripcion}
                 </p>
               </div>
@@ -117,13 +125,13 @@ export default async function ViajePage({ params }: Props) {
 
           {/* Precios */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#e8ff4c' }}>
               <span className="text-4xl">💰</span>
               Precios por Habitación
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {precios.doble > 0 && (
-                <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+                <div className="text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform" style={{ backgroundColor: '#0000cd' }}>
                   <div className="text-center">
                     <div className="text-4xl mb-2">🛏️</div>
                     <h3 className="text-xl font-bold mb-2">Doble</h3>
@@ -134,7 +142,7 @@ export default async function ViajePage({ params }: Props) {
               )}
               
               {precios.triple > 0 && (
-                <div className="bg-pink-500 text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+                <div className="text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform" style={{ backgroundColor: '#ff4bd1' }}>
                   <div className="text-center">
                     <div className="text-4xl mb-2">🛏️🛏️</div>
                     <h3 className="text-xl font-bold mb-2">Triple</h3>
@@ -145,7 +153,7 @@ export default async function ViajePage({ params }: Props) {
               )}
               
               {precios.cuadruple > 0 && (
-                <div className="bg-purple-600 text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+                <div className="text-white p-6 rounded-2xl shadow-lg transform hover:scale-105 transition-transform" style={{ backgroundColor: '#88ea4e', color: '#000000' }}>
                   <div className="text-center">
                     <div className="text-4xl mb-2">🛏️🛏️🛏️</div>
                     <h3 className="text-xl font-bold mb-2">Cuádruple</h3>
@@ -160,21 +168,21 @@ export default async function ViajePage({ params }: Props) {
           {/* Itinerario */}
           {viaje.itinerario && Array.isArray(viaje.itinerario) && viaje.itinerario.length > 0 && (
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#e8ff4c' }}>
                 <span className="text-4xl">🗓️</span>
                 Itinerario
               </h2>
               <div className="space-y-4">
                 {viaje.itinerario.map((dia: any, index: number) => (
-                  <div key={index} className="bg-gray-50 p-6 rounded-2xl border-l-4 border-blue-600">
-                    <h3 className="text-xl font-bold text-blue-600 mb-3">
+                  <div key={index} className="p-6 rounded-2xl" style={{ backgroundColor: '#ffffff', borderLeft: '4px solid #0000cd' }}>
+                    <h3 className="text-xl font-bold mb-3" style={{ color: '#0000cd' }}>
                       {dia.dia || `Día ${index + 1}`}
                     </h3>
                     <ul className="space-y-2">
                       {dia.actividades && dia.actividades.map((actividad: string, i: number) => (
                         <li key={i} className="flex items-start gap-3">
-                          <span className="text-blue-600 mt-1">✓</span>
-                          <span className="text-gray-700">{actividad}</span>
+                          <span style={{ color: '#88ea4e' }} className="mt-1">✓</span>
+                          <span style={{ color: '#000000' }}>{actividad}</span>
                         </li>
                       ))}
                     </ul>
@@ -187,16 +195,16 @@ export default async function ViajePage({ params }: Props) {
           {/* Lo que Incluye */}
           {viaje.incluye && viaje.incluye.length > 0 && (
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#e8ff4c' }}>
                 <span className="text-4xl">✅</span>
                 ¿Qué Incluye?
               </h2>
-              <div className="bg-green-50 p-8 rounded-2xl">
+              <div className="p-8 rounded-2xl" style={{ backgroundColor: '#ffffff', border: '3px solid #88ea4e' }}>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {viaje.incluye.map((item: string, index: number) => (
                     <li key={index} className="flex items-start gap-3">
-                      <span className="text-green-600 text-xl mt-0.5">✓</span>
-                      <span className="text-gray-700">{item}</span>
+                      <span className="text-xl mt-0.5" style={{ color: '#88ea4e' }}>✓</span>
+                      <span style={{ color: '#000000' }}>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -207,16 +215,16 @@ export default async function ViajePage({ params }: Props) {
           {/* Lo que NO Incluye */}
           {viaje.no_incluye && viaje.no_incluye.length > 0 && (
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#e8ff4c' }}>
                 <span className="text-4xl">❌</span>
                 No Incluye
               </h2>
-              <div className="bg-red-50 p-8 rounded-2xl">
+              <div className="p-8 rounded-2xl" style={{ backgroundColor: '#ffffff', border: '3px solid #ff283b' }}>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {viaje.no_incluye.map((item: string, index: number) => (
                     <li key={index} className="flex items-start gap-3">
-                      <span className="text-red-600 text-xl mt-0.5">✗</span>
-                      <span className="text-gray-700">{item}</span>
+                      <span className="text-xl mt-0.5" style={{ color: '#ff283b' }}>✗</span>
+                      <span style={{ color: '#000000' }}>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -227,12 +235,12 @@ export default async function ViajePage({ params }: Props) {
           {/* Venue Info */}
           {viaje.venue && (
             <section className="mb-12">
-              <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-8 rounded-2xl">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+              <div className="p-8 rounded-2xl" style={{ backgroundColor: '#ffffff', border: '3px solid #ff4bd1' }}>
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3" style={{ color: '#ff4bd1' }}>
                   <span className="text-3xl">🏟️</span>
                   Lugar del Evento
                 </h2>
-                <p className="text-xl text-gray-700">{viaje.venue}</p>
+                <p className="text-xl" style={{ color: '#000000' }}>{viaje.venue}</p>
               </div>
             </section>
           )}
@@ -240,17 +248,18 @@ export default async function ViajePage({ params }: Props) {
           {/* Call to Action */}
           {viaje.whatsapp_inscripcion && (
             <section className="mb-12">
-              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-12 rounded-2xl text-center shadow-2xl">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <div className="p-12 rounded-2xl text-center shadow-2xl text-white" style={{ backgroundColor: '#88ea4e', color: '#000000' }}>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#000000' }}>
                   ¿Listo para la aventura? 🎉
                 </h2>
-                <p className="text-xl mb-8 opacity-90">
+                <p className="text-xl mb-8" style={{ color: '#000000' }}>
                   ¡Aparta tu lugar ahora! Los cupos son limitados.
                 </p>
                 <a 
                   href={viaje.whatsapp_inscripcion}
                   target="_blank"
-                  className="inline-block bg-white text-green-600 px-10 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
+                  className="inline-block px-10 py-4 rounded-full text-xl font-bold transition-all transform hover:scale-105 shadow-lg"
+                  style={{ backgroundColor: '#000000', color: '#e8ff4c' }}
                 >
                   📱 Inscribirme por WhatsApp
                 </a>
@@ -262,7 +271,7 @@ export default async function ViajePage({ params }: Props) {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12 mt-20">
+      <footer className="text-white py-12" style={{ backgroundColor: '#000000', borderTop: '3px solid #0000cd' }}>
         <div className="container mx-auto px-4 text-center">
           <Image 
             src="/blanco con negro.png" 
@@ -271,9 +280,9 @@ export default async function ViajePage({ params }: Props) {
             height={80}
             className="mx-auto mb-4 rounded-lg"
           />
-          <h3 className="text-xl font-bold mb-2">Conecta Matamoros</h3>
-          <p className="text-gray-400 mb-6">Tu aventura comienza aquí</p>
-          <Link href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+          <h3 className="text-xl font-bold mb-2" style={{ color: '#e8ff4c' }}>Conecta Matamoros</h3>
+          <p className="mb-6" style={{ color: '#ff4bd1' }}>Tu aventura comienza aquí</p>
+          <Link href="/" style={{ color: '#88ea4e' }} className="hover:opacity-80 transition-opacity">
             ← Volver a todos los viajes
           </Link>
         </div>
