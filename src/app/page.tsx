@@ -207,3 +207,4 @@ function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) 
     </a>
   )
 }
+
