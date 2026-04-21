@@ -101,12 +101,10 @@ export default function HomePage() {
       <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
         {/* Imagen de fondo */}
         <div className="absolute inset-0">
-          <Image 
+          <img 
             src="/Header_02.jpg"
             alt="Conecta MX"
-            fill
-            className="object-cover"
-            priority
+            className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Overlay oscuro */}
           <div className="absolute inset-0 bg-black/40"></div>
