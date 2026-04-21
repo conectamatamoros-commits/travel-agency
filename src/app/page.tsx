@@ -97,16 +97,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Main Hero */}
-      <section className="relative py-20 md:py-32 bg-black">
-        <div className="container mx-auto px-4 text-center max-w-5xl">
+      {/* Main Hero con Imagen */}
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        {/* Imagen de fondo */}
+        <div className="absolute inset-0">
+          <img 
+            src="/Header_02.jpg"
+            alt="Conecta MX"
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
+          />
+          {/* Overlay oscuro */}
+          <div className="absolute inset-0 bg-black/70"></div>
+        </div>
+
+        {/* Contenido sobre la imagen */}
+        <div className="relative container mx-auto px-4 text-center max-w-5xl">
           <p className="text-base md:text-lg text-yellow-400 mb-6 font-black tracking-wide">
             Conecta Matamoros · Catálogo 2026
           </p>
-          <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white">
+          <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white drop-shadow-2xl">
             Viaja con expertos
           </h2>
-          <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
+          <p className="text-xl md:text-2xl text-gray-100 mb-10 max-w-3xl mx-auto leading-relaxed font-medium drop-shadow-lg">
             Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
             Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
             Escoge tu evento, elige paquete y paga en quincenas sin estrés.
@@ -116,13 +128,13 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-5 justify-center mb-10">
             <button 
               onClick={() => scrollToEvents('todos')}
-              className="bg-yellow-400 text-black px-10 py-5 rounded-full font-black text-lg hover:bg-yellow-300 transition-all transform hover:scale-105"
+              className="bg-yellow-400 text-black px-10 py-5 rounded-full font-black text-lg hover:bg-yellow-300 transition-all transform hover:scale-105 shadow-2xl"
             >
               Ver eventos →
             </button>
             <a 
               href="https://wa.me/5218683676890"
-              className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105"
+              className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105 shadow-2xl"
             >
               📱 WhatsApp
             </a>
