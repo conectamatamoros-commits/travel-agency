@@ -59,18 +59,18 @@ export default function HomePage() {
               <Image 
                 src="/blanco con negro.png" 
                 alt="Conecta Matamoros" 
-                width={40} 
-                height={40}
+                width={50} 
+                height={50}
                 className="rounded-lg"
               />
               <div>
-                <h1 className="text-xl font-bold text-white">CONECTA</h1>
-                <p className="text-xs text-gray-400">MX.</p>
+                <h1 className="text-2xl font-black text-white tracking-tight">CONECTA</h1>
+                <p className="text-sm text-gray-400 font-medium">MX.</p>
               </div>
             </div>
             <Link 
               href="/admin"
-              className="text-xs text-gray-500 hover:text-white transition-colors"
+              className="text-sm text-gray-500 hover:text-white transition-colors font-medium"
             >
               Admin
             </Link>
@@ -79,26 +79,26 @@ export default function HomePage() {
       </header>
 
       {/* Spacer para header fijo */}
-      <div className="h-16"></div>
+      <div className="h-20"></div>
 
       {/* Hero Section con Marquee */}
       <section className="relative overflow-hidden border-b border-gray-800">
-        <div className="bg-gradient-to-r from-red-500 via-pink-500 to-blue-500 py-3">
+        <div className="bg-gradient-to-r from-red-500 via-pink-500 to-blue-500 py-4">
           <div className="animate-marquee whitespace-nowrap">
-            <span className="text-sm font-bold mx-8">Conecta Matamoros</span>
-            <span className="text-sm mx-8">Tours a conciertos</span>
-            <span className="text-sm mx-8">Desde Matamoros · Tamaulipas</span>
-            <span className="text-sm font-bold mx-8">Paga en quincenas</span>
-            <span className="text-sm mx-8">Boletos oficiales</span>
-            <span className="text-sm font-bold mx-8">Conecta Matamoros</span>
-            <span className="text-sm mx-8">Tours a conciertos</span>
-            <span className="text-sm mx-8">Desde Matamoros · Tamaulipas</span>
+            <span className="text-base font-bold mx-8">Conecta Matamoros</span>
+            <span className="text-base mx-8">Tours a conciertos</span>
+            <span className="text-base mx-8">Desde Matamoros · Tamaulipas</span>
+            <span className="text-base font-bold mx-8">Paga en quincenas</span>
+            <span className="text-base mx-8">Boletos oficiales</span>
+            <span className="text-base font-bold mx-8">Conecta Matamoros</span>
+            <span className="text-base mx-8">Tours a conciertos</span>
+            <span className="text-base mx-8">Desde Matamoros · Tamaulipas</span>
           </div>
         </div>
       </section>
 
       {/* Main Hero con Imagen */}
-      <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+      <section className="relative h-[70vh] md:h-[85vh] overflow-hidden">
         {/* Imagen de fondo */}
         <div className="absolute inset-0">
           <img 
@@ -107,46 +107,49 @@ export default function HomePage() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Overlay oscuro */}
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
 
         {/* Contenido sobre la imagen */}
         <div className="relative h-full flex items-center justify-center px-4">
-          <div className="container mx-auto max-w-4xl text-center">
-            <p className="text-sm text-white/80 mb-4 font-bold">Conecta Matamoros · Catálogo 2026</p>
-            <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight text-white drop-shadow-2xl">
+          <div className="container mx-auto max-w-5xl text-center">
+            <p className="text-base md:text-lg text-white/90 mb-6 font-bold tracking-wide">
+              Conecta Matamoros · Catálogo 2026
+            </p>
+            <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white drop-shadow-2xl">
               Viaja con expertos
             </h2>
-            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-lg">
-              Agencia de viajes desde Matamoros. Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
+            <p className="text-xl md:text-2xl text-white/95 mb-10 max-w-3xl mx-auto drop-shadow-lg leading-relaxed font-medium">
+              Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
+              Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
               Escoge tu evento, elige paquete y paga en quincenas sin estrés.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-5 justify-center mb-10">
               <button 
                 onClick={() => scrollToEvents('todos')}
-                className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition-all transform hover:scale-105"
+                className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105"
               >
                 Ver eventos →
               </button>
               <a 
                 href="https://wa.me/5218683676890"
-                className="bg-green-500 text-white px-8 py-4 rounded-full font-bold hover:bg-green-600 transition-all transform hover:scale-105"
+                className="bg-green-500 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-green-600 transition-all transform hover:scale-105"
               >
                 📱 WhatsApp
               </a>
             </div>
 
             {/* Links rápidos */}
-            <div className="flex flex-wrap gap-4 justify-center text-sm">
-              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+            <div className="flex flex-wrap gap-6 justify-center text-base">
+              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
                 ¿Cómo funciona? →
               </a>
-              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
                 Preguntas frecuentes →
               </a>
-              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
                 Kit Conecta →
               </a>
             </div>
@@ -155,13 +158,13 @@ export default function HomePage() {
       </section>
 
       {/* Filtros de Eventos */}
-      <section className="border-t border-gray-800 py-8 px-4 sticky top-16 bg-black z-40">
+      <section className="border-t border-gray-800 py-8 px-4 sticky top-20 bg-black z-40">
         <div className="container mx-auto">
-          <h3 className="text-sm font-bold mb-4">🔥 LOS MÁS BUSCADOS</h3>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <h3 className="text-base md:text-lg font-black mb-5 tracking-wide">🔥 LOS MÁS BUSCADOS</h3>
+          <div className="flex gap-3 overflow-x-auto pb-2">
             <button 
               onClick={() => scrollToEvents('todos')}
-              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
                 filtro === 'todos' 
                   ? 'bg-white text-black' 
                   : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
@@ -171,7 +174,7 @@ export default function HomePage() {
             </button>
             <button 
               onClick={() => scrollToEvents('monterrey')}
-              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
                 filtro === 'monterrey' 
                   ? 'bg-white text-black' 
                   : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
@@ -181,7 +184,7 @@ export default function HomePage() {
             </button>
             <button 
               onClick={() => scrollToEvents('cdmx')}
-              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
                 filtro === 'cdmx' 
                   ? 'bg-white text-black' 
                   : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
@@ -191,13 +194,13 @@ export default function HomePage() {
             </button>
             <button 
               onClick={() => scrollToEvents('todos')}
-              className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800"
+              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border border-gray-800"
             >
               Disponibles
             </button>
             <button 
               onClick={() => scrollToEvents('todos')}
-              className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800"
+              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border border-gray-800"
             >
               Últimos
             </button>
@@ -206,18 +209,18 @@ export default function HomePage() {
       </section>
 
       {/* Grid de Eventos */}
-      <section id="eventos-grid" className="py-12 px-4">
+      <section id="eventos-grid" className="py-16 px-4">
         <div className="container mx-auto">
           {loading ? (
-            <div className="text-center py-20">
-              <p className="text-gray-400">Cargando eventos...</p>
+            <div className="text-center py-24">
+              <p className="text-gray-400 text-xl">Cargando eventos...</p>
             </div>
           ) : viajesFiltrados.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-gray-400">No hay eventos disponibles para este filtro</p>
+            <div className="text-center py-24">
+              <p className="text-gray-400 text-xl">No hay eventos disponibles para este filtro</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {viajesFiltrados.map((viaje) => (
                 <EventCard key={viaje.id} viaje={viaje} />
               ))}
@@ -227,42 +230,40 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-12 px-4 mt-20">
+      <footer className="border-t border-gray-800 py-16 px-4 mt-24">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
             {/* Logo y descripción */}
             <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-4 mb-6">
                 <Image 
                   src="/blanco con negro.png" 
                   alt="Conecta Matamoros" 
-                  width={50} 
-                  height={50}
+                  width={60} 
+                  height={60}
                   className="rounded-lg"
                 />
                 <div>
-                  <h1 className="text-xl font-bold text-white">CONECTA</h1>
-                  <p className="text-xs text-gray-400">MX.</p>
+                  <h1 className="text-2xl font-black text-white tracking-tight">CONECTA</h1>
+                  <p className="text-sm text-gray-400 font-medium">MX.</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 max-w-md">
+              <p className="text-base text-gray-400 max-w-md leading-relaxed mb-8">
                 Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
                 Transporte · Hospedaje · Boletos · Kit Conecta.
               </p>
-              <div className="mt-6">
-                <a 
-                  href="https://wa.me/5218683676890"
-                  className="inline-block bg-green-500 text-white px-6 py-3 rounded-full font-bold hover:bg-green-600 transition-all"
-                >
-                  ¡Reserva ya! →
-                </a>
-              </div>
+              <a 
+                href="https://wa.me/5218683676890"
+                className="inline-block bg-green-500 text-white px-8 py-4 rounded-full font-black text-base hover:bg-green-600 transition-all"
+              >
+                ¡Reserva ya! →
+              </a>
             </div>
 
             {/* Web */}
             <div>
-              <h4 className="text-sm font-bold mb-4">Web</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h4 className="text-base font-black mb-5 tracking-wide">Web</h4>
+              <ul className="space-y-3 text-base text-gray-400">
                 <li><a href="/" className="hover:text-white transition-colors">Eventos</a></li>
                 <li><a href="https://wa.me/5218683676890" className="hover:text-white transition-colors">FAQ</a></li>
               </ul>
@@ -270,8 +271,8 @@ export default function HomePage() {
 
             {/* Redes */}
             <div>
-              <h4 className="text-sm font-bold mb-4">Redes</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h4 className="text-base font-black mb-5 tracking-wide">Redes</h4>
+              <ul className="space-y-3 text-base text-gray-400">
                 <li><a href="https://wa.me/5218683676890" className="hover:text-white transition-colors">WhatsApp</a></li>
                 <li><a href="https://instagram.com" className="hover:text-white transition-colors">Instagram</a></li>
                 <li><a href="https://facebook.com" className="hover:text-white transition-colors">Facebook</a></li>
@@ -281,10 +282,10 @@ export default function HomePage() {
           </div>
 
           {/* Contacto */}
-          <div className="border-t border-gray-800 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+          <div className="border-t border-gray-800 pt-10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-base text-gray-400">
               <p>Conecta Matamoros © 2026 · Todos los derechos reservados</p>
-              <p className="text-xs">Operando desde 2013</p>
+              <p className="text-sm">Operando desde 2013</p>
             </div>
           </div>
         </div>
@@ -299,7 +300,7 @@ function EventCard({ viaje }: { viaje: any }) {
     <Link href={`/viaje/${viaje.slug}`}>
       <div className="group cursor-pointer bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-red-500 transition-all">
         {/* Imagen */}
-        <div className="relative h-64 bg-gray-800 overflow-hidden">
+        <div className="relative h-72 bg-gray-800 overflow-hidden">
           {viaje.imagen_portada ? (
             <Image
               src={viaje.imagen_portada}
@@ -309,39 +310,39 @@ function EventCard({ viaje }: { viaje: any }) {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-red-500 via-pink-500 to-blue-500 flex items-center justify-center">
-              <span className="text-6xl">🎵</span>
+              <span className="text-7xl">🎵</span>
             </div>
           )}
           {/* Badge */}
-          <div className="absolute top-4 right-4 bg-black/80 backdrop-blur px-3 py-1 rounded-full">
-            <p className="text-xs font-bold">
+          <div className="absolute top-4 right-4 bg-black/80 backdrop-blur px-4 py-2 rounded-full">
+            <p className="text-sm font-black tracking-wide">
               {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d MMM", { locale: es }).toUpperCase() : 'PRONTO'}
             </p>
           </div>
         </div>
         
         {/* Contenido */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold mb-3 text-white group-hover:text-red-500 transition-colors">
+        <div className="p-7">
+          <h3 className="text-2xl font-black mb-4 text-white group-hover:text-red-500 transition-colors leading-tight">
             {viaje.nombre}
           </h3>
           
-          <div className="space-y-2 mb-4 text-sm text-gray-400">
+          <div className="space-y-3 mb-5 text-base text-gray-400">
             <div className="flex items-center gap-2">
-              <span>📅</span>
-              <span>
+              <span className="text-lg">📅</span>
+              <span className="font-medium">
                 {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d 'de' MMMM, yyyy", { locale: es }) : 'Fecha por confirmar'}
               </span>
             </div>
             
             <div className="flex items-center gap-2">
-              <span>📍</span>
-              <span>{viaje.ciudad || 'Ciudad por confirmar'}</span>
+              <span className="text-lg">📍</span>
+              <span className="font-medium">{viaje.ciudad || 'Ciudad por confirmar'}</span>
             </div>
             
             {viaje.venue && (
-              <div className="flex items-center gap-2 text-xs">
-                <span>🏟️</span>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-lg">🏟️</span>
                 <span>{viaje.venue}</span>
               </div>
             )}
@@ -349,15 +350,15 @@ function EventCard({ viaje }: { viaje: any }) {
           
           {/* Precio desde */}
           {viaje.precios && (
-            <div className="mb-4">
-              <p className="text-xs text-gray-500">Desde</p>
-              <p className="text-2xl font-bold text-white">
+            <div className="mb-5">
+              <p className="text-sm text-gray-500 font-medium">Desde</p>
+              <p className="text-3xl font-black text-white">
                 ${Math.min(...Object.values(viaje.precios).filter((p: number) => p > 0)).toLocaleString()}
               </p>
             </div>
           )}
           
-          <button className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 rounded-full font-bold hover:from-red-600 hover:to-pink-600 transition-all">
+          <button className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-full font-black text-base hover:from-red-600 hover:to-pink-600 transition-all">
             Ver detalles
           </button>
         </div>
