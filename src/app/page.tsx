@@ -52,7 +52,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header Fijo */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b-2 border-yellow-400">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -64,13 +64,13 @@ export default function HomePage() {
                 className="rounded-lg"
               />
               <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">CONECTA</h1>
-                <p className="text-sm text-gray-400 font-medium">MX.</p>
+                <h1 className="text-2xl font-black text-yellow-400 tracking-tight">CONECTA</h1>
+                <p className="text-sm text-gray-400 font-bold">MX.</p>
               </div>
             </div>
             <Link 
               href="/admin"
-              className="text-sm text-gray-500 hover:text-white transition-colors font-medium"
+              className="text-sm text-yellow-400 hover:text-white transition-colors font-bold"
             >
               Admin
             </Link>
@@ -82,125 +82,111 @@ export default function HomePage() {
       <div className="h-20"></div>
 
       {/* Hero Section con Marquee */}
-      <section className="relative overflow-hidden border-b border-gray-800">
-        <div className="bg-gradient-to-r from-red-500 via-pink-500 to-blue-500 py-4">
+      <section className="relative overflow-hidden border-b-2 border-yellow-400">
+        <div className="bg-yellow-400 py-4">
           <div className="animate-marquee whitespace-nowrap">
-            <span className="text-base font-bold mx-8">Conecta Matamoros</span>
-            <span className="text-base mx-8">Tours a conciertos</span>
-            <span className="text-base mx-8">Desde Matamoros · Tamaulipas</span>
-            <span className="text-base font-bold mx-8">Paga en quincenas</span>
-            <span className="text-base mx-8">Boletos oficiales</span>
-            <span className="text-base font-bold mx-8">Conecta Matamoros</span>
-            <span className="text-base mx-8">Tours a conciertos</span>
-            <span className="text-base mx-8">Desde Matamoros · Tamaulipas</span>
+            <span className="text-base font-black text-black mx-8">Conecta Matamoros</span>
+            <span className="text-base text-black mx-8">Tours a conciertos</span>
+            <span className="text-base text-black mx-8">Desde Matamoros · Tamaulipas</span>
+            <span className="text-base font-black text-black mx-8">Paga en quincenas</span>
+            <span className="text-base text-black mx-8">Boletos oficiales</span>
+            <span className="text-base font-black text-black mx-8">Conecta Matamoros</span>
+            <span className="text-base text-black mx-8">Tours a conciertos</span>
+            <span className="text-base text-black mx-8">Desde Matamoros · Tamaulipas</span>
           </div>
         </div>
       </section>
 
-      {/* Main Hero con Imagen */}
-      <section className="relative h-[70vh] md:h-[85vh] overflow-hidden">
-        {/* Imagen de fondo */}
-        <div className="absolute inset-0">
-          <img 
-            src="/Header_02.jpg"
-            alt="Conecta MX"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {/* Overlay oscuro */}
-          <div className="absolute inset-0 bg-black/50"></div>
-        </div>
+      {/* Main Hero */}
+      <section className="relative py-20 md:py-32 bg-black">
+        <div className="container mx-auto px-4 text-center max-w-5xl">
+          <p className="text-base md:text-lg text-yellow-400 mb-6 font-black tracking-wide">
+            Conecta Matamoros · Catálogo 2026
+          </p>
+          <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white">
+            Viaja con expertos
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
+            Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
+            Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
+            Escoge tu evento, elige paquete y paga en quincenas sin estrés.
+          </p>
 
-        {/* Contenido sobre la imagen */}
-        <div className="relative h-full flex items-center justify-center px-4">
-          <div className="container mx-auto max-w-5xl text-center">
-            <p className="text-base md:text-lg text-white/90 mb-6 font-bold tracking-wide">
-              Conecta Matamoros · Catálogo 2026
-            </p>
-            <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white drop-shadow-2xl">
-              Viaja con expertos
-            </h2>
-            <p className="text-xl md:text-2xl text-white/95 mb-10 max-w-3xl mx-auto drop-shadow-lg leading-relaxed font-medium">
-              Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
-              Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
-              Escoge tu evento, elige paquete y paga en quincenas sin estrés.
-            </p>
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-5 justify-center mb-10">
+            <button 
+              onClick={() => scrollToEvents('todos')}
+              className="bg-yellow-400 text-black px-10 py-5 rounded-full font-black text-lg hover:bg-yellow-300 transition-all transform hover:scale-105"
+            >
+              Ver eventos →
+            </button>
+            <a 
+              href="https://wa.me/5218683676890"
+              className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105"
+            >
+              📱 WhatsApp
+            </a>
+          </div>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-5 justify-center mb-10">
-              <button 
-                onClick={() => scrollToEvents('todos')}
-                className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105"
-              >
-                Ver eventos →
-              </button>
-              <a 
-                href="https://wa.me/5218683676890"
-                className="bg-green-500 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-green-600 transition-all transform hover:scale-105"
-              >
-                📱 WhatsApp
-              </a>
-            </div>
-
-            {/* Links rápidos */}
-            <div className="flex flex-wrap gap-6 justify-center text-base">
-              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
-                ¿Cómo funciona? →
-              </a>
-              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
-                Preguntas frecuentes →
-              </a>
-              <a href="https://wa.me/5218683676890" className="text-white/80 hover:text-white transition-colors font-medium">
-                Kit Conecta →
-              </a>
-            </div>
+          {/* Links rápidos */}
+          <div className="flex flex-wrap gap-6 justify-center text-base">
+            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
+              ¿Cómo funciona? →
+            </a>
+            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
+              Preguntas frecuentes →
+            </a>
+            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
+              Kit Conecta →
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Filtros de Eventos */}
-      <section className="border-t border-gray-800 py-8 px-4 sticky top-20 bg-black z-40">
+      {/* Filtros de Eventos - STICKY */}
+      <section className="border-t-2 border-b-2 border-yellow-400 py-6 px-4 sticky top-20 bg-black z-40">
         <div className="container mx-auto">
-          <h3 className="text-base md:text-lg font-black mb-5 tracking-wide">🔥 LOS MÁS BUSCADOS</h3>
+          <h3 className="text-base md:text-lg font-black mb-5 tracking-wide text-yellow-400">🔥 LOS MÁS BUSCADOS</h3>
           <div className="flex gap-3 overflow-x-auto pb-2">
             <button 
               onClick={() => scrollToEvents('todos')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
                 filtro === 'todos' 
-                  ? 'bg-white text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+                  ? 'bg-yellow-400 text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
               }`}
             >
               Todos
             </button>
             <button 
               onClick={() => scrollToEvents('monterrey')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
                 filtro === 'monterrey' 
-                  ? 'bg-white text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+                  ? 'bg-yellow-400 text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
               }`}
             >
               Monterrey
             </button>
             <button 
               onClick={() => scrollToEvents('cdmx')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap ${
+              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
                 filtro === 'cdmx' 
-                  ? 'bg-white text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+                  ? 'bg-yellow-400 text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
               }`}
             >
               CDMX
             </button>
             <button 
               onClick={() => scrollToEvents('todos')}
-              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border border-gray-800"
+              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border-2 border-yellow-400 transition-all"
             >
               Disponibles
             </button>
             <button 
               onClick={() => scrollToEvents('todos')}
-              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border border-gray-800"
+              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border-2 border-yellow-400 transition-all"
             >
               Últimos
             </button>
@@ -208,12 +194,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Grid de Eventos */}
-      <section id="eventos-grid" className="py-16 px-4">
+      {/* Grid de Eventos - ESTILO REYNOSA */}
+      <section id="eventos-grid" className="py-16 px-4 bg-black">
         <div className="container mx-auto">
           {loading ? (
             <div className="text-center py-24">
-              <p className="text-gray-400 text-xl">Cargando eventos...</p>
+              <p className="text-yellow-400 text-xl font-bold">Cargando eventos...</p>
             </div>
           ) : viajesFiltrados.length === 0 ? (
             <div className="text-center py-24">
@@ -230,7 +216,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-16 px-4 mt-24">
+      <footer className="border-t-2 border-yellow-400 py-16 px-4 mt-24 bg-black">
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
             {/* Logo y descripción */}
@@ -244,17 +230,17 @@ export default function HomePage() {
                   className="rounded-lg"
                 />
                 <div>
-                  <h1 className="text-2xl font-black text-white tracking-tight">CONECTA</h1>
-                  <p className="text-sm text-gray-400 font-medium">MX.</p>
+                  <h1 className="text-2xl font-black text-yellow-400 tracking-tight">CONECTA</h1>
+                  <p className="text-sm text-gray-400 font-bold">MX.</p>
                 </div>
               </div>
-              <p className="text-base text-gray-400 max-w-md leading-relaxed mb-8">
+              <p className="text-base text-gray-300 max-w-md leading-relaxed mb-8">
                 Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
                 Transporte · Hospedaje · Boletos · Kit Conecta.
               </p>
               <a 
                 href="https://wa.me/5218683676890"
-                className="inline-block bg-green-500 text-white px-8 py-4 rounded-full font-black text-base hover:bg-green-600 transition-all"
+                className="inline-block bg-yellow-400 text-black px-8 py-4 rounded-full font-black text-base hover:bg-yellow-300 transition-all"
               >
                 ¡Reserva ya! →
               </a>
@@ -262,30 +248,30 @@ export default function HomePage() {
 
             {/* Web */}
             <div>
-              <h4 className="text-base font-black mb-5 tracking-wide">Web</h4>
-              <ul className="space-y-3 text-base text-gray-400">
-                <li><a href="/" className="hover:text-white transition-colors">Eventos</a></li>
-                <li><a href="https://wa.me/5218683676890" className="hover:text-white transition-colors">FAQ</a></li>
+              <h4 className="text-base font-black mb-5 tracking-wide text-yellow-400">Web</h4>
+              <ul className="space-y-3 text-base text-gray-300">
+                <li><a href="/" className="hover:text-yellow-400 transition-colors">Eventos</a></li>
+                <li><a href="https://wa.me/5218683676890" className="hover:text-yellow-400 transition-colors">FAQ</a></li>
               </ul>
             </div>
 
             {/* Redes */}
             <div>
-              <h4 className="text-base font-black mb-5 tracking-wide">Redes</h4>
-              <ul className="space-y-3 text-base text-gray-400">
-                <li><a href="https://wa.me/5218683676890" className="hover:text-white transition-colors">WhatsApp</a></li>
-                <li><a href="https://instagram.com" className="hover:text-white transition-colors">Instagram</a></li>
-                <li><a href="https://facebook.com" className="hover:text-white transition-colors">Facebook</a></li>
-                <li><a href="https://tiktok.com" className="hover:text-white transition-colors">TikTok</a></li>
+              <h4 className="text-base font-black mb-5 tracking-wide text-yellow-400">Redes</h4>
+              <ul className="space-y-3 text-base text-gray-300">
+                <li><a href="https://wa.me/5218683676890" className="hover:text-yellow-400 transition-colors">WhatsApp</a></li>
+                <li><a href="https://instagram.com" className="hover:text-yellow-400 transition-colors">Instagram</a></li>
+                <li><a href="https://facebook.com" className="hover:text-yellow-400 transition-colors">Facebook</a></li>
+                <li><a href="https://tiktok.com" className="hover:text-yellow-400 transition-colors">TikTok</a></li>
               </ul>
             </div>
           </div>
 
           {/* Contacto */}
-          <div className="border-t border-gray-800 pt-10">
+          <div className="border-t-2 border-yellow-400 pt-10">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-base text-gray-400">
               <p>Conecta Matamoros © 2026 · Todos los derechos reservados</p>
-              <p className="text-sm">Operando desde 2013</p>
+              <p className="text-sm text-yellow-400 font-bold">Operando desde 2013</p>
             </div>
           </div>
         </div>
@@ -294,11 +280,11 @@ export default function HomePage() {
   )
 }
 
-// Componente Tarjeta de Evento
+// Componente Tarjeta de Evento - ESTILO REYNOSA
 function EventCard({ viaje }: { viaje: any }) {
   return (
     <Link href={`/viaje/${viaje.slug}`}>
-      <div className="group cursor-pointer bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-red-500 transition-all">
+      <div className="group cursor-pointer bg-gray-900 border-2 border-yellow-400 rounded-2xl overflow-hidden hover:border-white hover:shadow-2xl hover:shadow-yellow-400/20 transition-all transform hover:scale-105">
         {/* Imagen */}
         <div className="relative h-72 bg-gray-800 overflow-hidden">
           {viaje.imagen_portada ? (
@@ -306,15 +292,15 @@ function EventCard({ viaje }: { viaje: any }) {
               src={viaje.imagen_portada}
               alt={viaje.nombre}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-110 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-red-500 via-pink-500 to-blue-500 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
               <span className="text-7xl">🎵</span>
             </div>
           )}
-          {/* Badge */}
-          <div className="absolute top-4 right-4 bg-black/80 backdrop-blur px-4 py-2 rounded-full">
+          {/* Badge de Fecha - Esquina superior derecha */}
+          <div className="absolute top-4 right-4 bg-yellow-400 text-black px-4 py-2 rounded-full shadow-xl">
             <p className="text-sm font-black tracking-wide">
               {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d MMM", { locale: es }).toUpperCase() : 'PRONTO'}
             </p>
@@ -322,12 +308,12 @@ function EventCard({ viaje }: { viaje: any }) {
         </div>
         
         {/* Contenido */}
-        <div className="p-7">
-          <h3 className="text-2xl font-black mb-4 text-white group-hover:text-red-500 transition-colors leading-tight">
+        <div className="p-7 bg-black">
+          <h3 className="text-2xl font-black mb-4 text-white group-hover:text-yellow-400 transition-colors leading-tight">
             {viaje.nombre}
           </h3>
           
-          <div className="space-y-3 mb-5 text-base text-gray-400">
+          <div className="space-y-3 mb-5 text-base text-gray-300">
             <div className="flex items-center gap-2">
               <span className="text-lg">📅</span>
               <span className="font-medium">
@@ -350,15 +336,15 @@ function EventCard({ viaje }: { viaje: any }) {
           
           {/* Precio desde */}
           {viaje.precios && (
-            <div className="mb-5">
-              <p className="text-sm text-gray-500 font-medium">Desde</p>
+            <div className="mb-5 bg-gray-800 p-4 rounded-xl border border-yellow-400">
+              <p className="text-sm text-yellow-400 font-black">Desde</p>
               <p className="text-3xl font-black text-white">
                 ${Math.min(...Object.values(viaje.precios).filter((p: number) => p > 0)).toLocaleString()}
               </p>
             </div>
           )}
           
-          <button className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-4 rounded-full font-black text-base hover:from-red-600 hover:to-pink-600 transition-all">
+          <button className="w-full bg-yellow-400 text-black py-4 rounded-full font-black text-base hover:bg-yellow-300 transition-all">
             Ver detalles
           </button>
         </div>
