@@ -1,27 +1,53 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useEffect, useState } from 'react'
 
-export const revalidate = 60
+export default function HomePage() {
+  const [viajes, setViajes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filtro, setFiltro] = useState('todos')
 
-export default async function HomePage() {
-  const supabase = await createClient()
-  
-  const { data: viajes, error } = await supabase
-    .from('viajes')
-    .select('*')
-    .eq('publico', true)
-    .eq('activo', true)
-    .order('fecha_evento', { ascending: true })
-  
-  if (error) {
-    console.error('Error al cargar viajes:', error)
-  }
+  useEffect(() => {
+    async function cargarViajes() {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('viajes')
+        .select('*')
+        .eq('publico', true)
+        .eq('activo', true)
+        .order('fecha_evento', { ascending: true })
+      
+      if (error) {
+        console.error('Error al cargar viajes:', error)
+      } else {
+        setViajes(data || [])
+      }
+      setLoading(false)
+    }
+    cargarViajes()
+  }, [])
 
   const hoy = new Date()
-  const viajesProximos = viajes?.filter(v => new Date(v.fecha_evento) >= hoy) || []
+  const viajesProximos = viajes.filter(v => new Date(v.fecha_evento) >= hoy)
+
+  // Filtrar viajes según el filtro seleccionado
+  const viajesFiltrados = viajesProximos.filter(viaje => {
+    if (filtro === 'todos') return true
+    if (filtro === 'monterrey') return viaje.ciudad?.toLowerCase().includes('monterrey')
+    if (filtro === 'cdmx') return viaje.ciudad?.toLowerCase().includes('cdmx') || viaje.ciudad?.toLowerCase().includes('méxico')
+    return true
+  })
+
+  const scrollToEvents = (nuevoFiltro: string) => {
+    setFiltro(nuevoFiltro)
+    const section = document.getElementById('eventos-grid')
+    section?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -100,12 +126,12 @@ export default async function HomePage() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <a 
-                href="#catalog-anchor"
+              <button 
+                onClick={() => scrollToEvents('todos')}
                 className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition-all transform hover:scale-105"
               >
                 Ver eventos →
-              </a>
+              </button>
               <a 
                 href="https://wa.me/5218683676890"
                 className="bg-green-500 text-white px-8 py-4 rounded-full font-bold hover:bg-green-600 transition-all transform hover:scale-105"
@@ -131,21 +157,74 @@ export default async function HomePage() {
       </section>
 
       {/* Filtros de Eventos */}
-      <section id="catalog-anchor" className="border-t border-gray-800 py-8 px-4 sticky top-16 bg-black z-40">
+      <section className="border-t border-gray-800 py-8 px-4 sticky top-16 bg-black z-40">
         <div className="container mx-auto">
           <h3 className="text-sm font-bold mb-4">🔥 LOS MÁS BUSCADOS</h3>
-          <EventFilters />
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <button 
+              onClick={() => scrollToEvents('todos')}
+              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+                filtro === 'todos' 
+                  ? 'bg-white text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+              }`}
+            >
+              Todos
+            </button>
+            <button 
+              onClick={() => scrollToEvents('monterrey')}
+              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+                filtro === 'monterrey' 
+                  ? 'bg-white text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+              }`}
+            >
+              Monterrey
+            </button>
+            <button 
+              onClick={() => scrollToEvents('cdmx')}
+              className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ${
+                filtro === 'cdmx' 
+                  ? 'bg-white text-black' 
+                  : 'bg-gray-900 text-white hover:bg-gray-800 border border-gray-800'
+              }`}
+            >
+              CDMX
+            </button>
+            <button 
+              onClick={() => scrollToEvents('todos')}
+              className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800"
+            >
+              Disponibles
+            </button>
+            <button 
+              onClick={() => scrollToEvents('todos')}
+              className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800"
+            >
+              Últimos
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Grid de Eventos */}
-      <section className="py-12 px-4">
+      <section id="eventos-grid" className="py-12 px-4">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {viajesProximos.map((viaje) => (
-              <EventCard key={viaje.id} viaje={viaje} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400">Cargando eventos...</p>
+            </div>
+          ) : viajesFiltrados.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400">No hay eventos disponibles para este filtro</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {viajesFiltrados.map((viaje) => (
+                <EventCard key={viaje.id} viaje={viaje} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -216,29 +295,6 @@ export default async function HomePage() {
   )
 }
 
-// Componente Filtros
-function EventFilters() {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
-      <button className="px-4 py-2 bg-white text-black rounded-full text-sm font-bold whitespace-nowrap">
-        Todos
-      </button>
-      <button className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800">
-        Monterrey
-      </button>
-      <button className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800">
-        CDMX
-      </button>
-      <button className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800">
-        Disponibles
-      </button>
-      <button className="px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-sm font-bold whitespace-nowrap border border-gray-800">
-        Últimos
-      </button>
-    </div>
-  )
-}
-
 // Componente Tarjeta de Evento
 function EventCard({ viaje }: { viaje: any }) {
   return (
@@ -298,7 +354,7 @@ function EventCard({ viaje }: { viaje: any }) {
             <div className="mb-4">
               <p className="text-xs text-gray-500">Desde</p>
               <p className="text-2xl font-bold text-white">
-                ${Math.min(...Object.values(viaje.precios).filter(p => p > 0)).toLocaleString()}
+                ${Math.min(...Object.values(viaje.precios).filter((p: number) => p > 0)).toLocaleString()}
               </p>
             </div>
           )}
