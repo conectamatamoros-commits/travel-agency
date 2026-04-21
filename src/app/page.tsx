@@ -143,15 +143,17 @@ export default async function HomePage() {
 
       {/* EVENTOS */}
       {viajesProximos.length > 0 && (
-        <section id="eventos" className="py-20 relative">
+        <section id="eventos" className="py-20 relative overflow-hidden">
           {/* Imagen de fondo para la sección */}
-          <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 opacity-30">
             <Image
               src="/Header_03.jpg"
               alt="Background"
               fill
               className="object-cover"
             />
+            {/* Overlay oscuro para contraste */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90"></div>
           </div>
           
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
