@@ -201,18 +201,6 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
-
-      {/* Estilos para animación marquee */}
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          display: inline-block;
-          animation: marquee 30s linear infinite;
-        }
-      `}</style>
     </div>
   )
 }
