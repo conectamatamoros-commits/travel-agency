@@ -22,7 +22,6 @@ export default async function HomePage() {
 
   const hoy = new Date()
   const viajesProximos = viajes?.filter(v => new Date(v.fecha_evento) >= hoy) || []
-  const proximoEvento = viajesProximos[0]
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -72,49 +71,61 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Main Hero */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <p className="text-sm text-gray-400 mb-2">Conecta Matamoros · Catálogo 2026</p>
-          <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-            Viaja con expertos
-          </h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Agencia de viajes desde Matamoros. Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
-            Escoge tu evento, elige paquete y paga en quincenas sin estrés.
-          </p>
+      {/* Main Hero con Imagen */}
+      <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+        {/* Imagen de fondo */}
+        <div className="absolute inset-0">
+          <Image 
+            src="/Header_02.jpg"
+            alt="Conecta MX"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Overlay oscuro */}
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
 
-          {/* Contador Próximo Evento */}
-          {proximoEvento && (
-            <div className="mb-12">
-              <p className="text-sm text-gray-400 mb-4">Próximo evento</p>
-              <div className="flex justify-center gap-4 mb-8">
-                <CountdownTimer targetDate={proximoEvento.fecha_evento} />
-              </div>
+        {/* Contenido sobre la imagen */}
+        <div className="relative h-full flex items-center justify-center px-4">
+          <div className="container mx-auto max-w-4xl text-center">
+            <p className="text-sm text-white/80 mb-4 font-bold">Conecta Matamoros · Catálogo 2026</p>
+            <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight text-white drop-shadow-2xl">
+              Viaja con expertos
+            </h2>
+            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-lg">
+              Agencia de viajes desde Matamoros. Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
+              Escoge tu evento, elige paquete y paga en quincenas sin estrés.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <a 
+                href="#catalog-anchor"
+                className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition-all transform hover:scale-105"
+              >
+                Ver eventos →
+              </a>
+              <a 
+                href="https://wa.me/5218683676890"
+                className="bg-green-500 text-white px-8 py-4 rounded-full font-bold hover:bg-green-600 transition-all transform hover:scale-105"
+              >
+                📱 WhatsApp
+              </a>
             </div>
-          )}
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <a 
-              href="#catalog-anchor"
-              className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition-all"
-            >
-              Ver eventos →
-            </a>
-          </div>
-
-          {/* Links rápidos */}
-          <div className="flex flex-wrap gap-4 justify-center text-sm">
-            <a href="https://wa.me/5218683676890" className="text-gray-400 hover:text-white transition-colors">
-              ¿Cómo funciona? →
-            </a>
-            <a href="https://wa.me/5218683676890" className="text-gray-400 hover:text-white transition-colors">
-              Preguntas frecuentes →
-            </a>
-            <a href="https://wa.me/5218683676890" className="text-gray-400 hover:text-white transition-colors">
-              Kit Conecta →
-            </a>
+            {/* Links rápidos */}
+            <div className="flex flex-wrap gap-4 justify-center text-sm">
+              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+                ¿Cómo funciona? →
+              </a>
+              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+                Preguntas frecuentes →
+              </a>
+              <a href="https://wa.me/5218683676890" className="text-white/70 hover:text-white transition-colors">
+                Kit Conecta →
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -201,38 +212,6 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-// Componente Contador
-function CountdownTimer({ targetDate }: { targetDate: string }) {
-  return (
-    <div className="flex gap-4">
-      <div className="text-center">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 min-w-[60px]">
-          <p className="text-3xl font-bold">00</p>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">días</p>
-      </div>
-      <div className="text-center">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 min-w-[60px]">
-          <p className="text-3xl font-bold">00</p>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">hrs</p>
-      </div>
-      <div className="text-center">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 min-w-[60px]">
-          <p className="text-3xl font-bold">00</p>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">min</p>
-      </div>
-      <div className="text-center">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 min-w-[60px]">
-          <p className="text-3xl font-bold">00</p>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">seg</p>
-      </div>
     </div>
   )
 }
