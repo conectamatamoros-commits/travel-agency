@@ -1,61 +1,38 @@
-'use client'
-
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { useEffect, useState } from 'react'
 
-export default function HomePage() {
-  const [viajes, setViajes] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState('todos')
+export const revalidate = 60 // Revalidar cada 60 segundos
 
-  useEffect(() => {
-    async function cargarViajes() {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('viajes')
-        .select('*')
-        .eq('publico', true)
-        .eq('activo', true)
-        .order('fecha_evento', { ascending: true })
-      
-      if (error) {
-        console.error('Error al cargar viajes:', error)
-      } else {
-        setViajes(data || [])
-      }
-      setLoading(false)
-    }
-    cargarViajes()
-  }, [])
-
-  const hoy = new Date()
-  const viajesProximos = viajes.filter(v => new Date(v.fecha_evento) >= hoy)
-
-  // Filtrar viajes según el filtro seleccionado
-  const viajesFiltrados = viajesProximos.filter(viaje => {
-    if (filtro === 'todos') return true
-    if (filtro === 'monterrey') return viaje.ciudad?.toLowerCase().includes('monterrey')
-    if (filtro === 'cdmx') return viaje.ciudad?.toLowerCase().includes('cdmx') || viaje.ciudad?.toLowerCase().includes('méxico')
-    return true
-  })
-
-  const scrollToEvents = (nuevoFiltro: string) => {
-    setFiltro(nuevoFiltro)
-    const section = document.getElementById('eventos-grid')
-    section?.scrollIntoView({ behavior: 'smooth' })
+export default async function HomePage() {
+  const supabase = await createClient()
+  
+  // Obtener viajes públicos ordenados por fecha
+  const { data: viajes, error } = await supabase
+    .from('viajes')
+    .select('*')
+    .eq('publico', true)
+    .eq('activo', true)
+    .order('fecha_evento', { ascending: true })
+  
+  if (error) {
+    console.error('Error al cargar viajes:', error)
   }
 
+  // Separar viajes próximos y pasados
+  const hoy = new Date()
+  const viajesProximos = viajes?.filter(v => new Date(v.fecha_evento) >= hoy) || []
+  const viajesPasados = viajes?.filter(v => new Date(v.fecha_evento) < hoy) || []
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header Fijo */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b-2 border-yellow-400">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-black text-white py-6 sticky top-0 z-50 shadow-lg">
+        <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Image 
                 src="/blanco con negro.png" 
                 alt="Conecta Matamoros" 
@@ -64,13 +41,13 @@ export default function HomePage() {
                 className="rounded-lg"
               />
               <div>
-                <h1 className="text-2xl font-black text-yellow-400 tracking-tight">CONECTA</h1>
-                <p className="text-sm text-gray-400 font-bold">MX.</p>
+                <h1 className="text-2xl md:text-3xl font-bold">Conecta Matamoros</h1>
+                <p className="text-sm text-gray-300">Agencia de Viajes</p>
               </div>
             </div>
             <Link 
               href="/admin"
-              className="text-sm text-yellow-400 hover:text-white transition-colors font-bold"
+              className="text-xs text-gray-400 hover:text-white transition-colors"
             >
               Admin
             </Link>
@@ -78,227 +55,119 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Spacer para header fijo */}
-      <div className="h-20"></div>
-
-      {/* Hero Section con Marquee */}
-      <section className="relative overflow-hidden border-b-2 border-yellow-400">
-        <div className="bg-yellow-400 py-4">
-          <div className="animate-marquee whitespace-nowrap">
-            <span className="text-base font-black text-black mx-8">Conecta Matamoros</span>
-            <span className="text-base text-black mx-8">Tours a conciertos</span>
-            <span className="text-base text-black mx-8">Desde Matamoros · Tamaulipas</span>
-            <span className="text-base font-black text-black mx-8">Paga en quincenas</span>
-            <span className="text-base text-black mx-8">Boletos oficiales</span>
-            <span className="text-base font-black text-black mx-8">Conecta Matamoros</span>
-            <span className="text-base text-black mx-8">Tours a conciertos</span>
-            <span className="text-base text-black mx-8">Desde Matamoros · Tamaulipas</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Hero con Imagen */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
-        {/* Imagen de fondo */}
-        <div className="absolute inset-0">
-          <img 
-            src="/Header_02.jpg"
-            alt="Conecta MX"
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
-          />
-          {/* Overlay oscuro */}
-          <div className="absolute inset-0 bg-black/70"></div>
-        </div>
-
-        {/* Contenido sobre la imagen */}
-        <div className="relative container mx-auto px-4 text-center max-w-5xl">
-          <p className="text-base md:text-lg text-yellow-400 mb-6 font-black tracking-wide">
-            Conecta Matamoros · Catálogo 2026
-          </p>
-          <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight text-white drop-shadow-2xl">
-            Viaja con expertos
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-6xl font-bold mb-4">
+            ¡Vive la experiencia de tu vida! 🎉
           </h2>
-          <p className="text-xl md:text-2xl text-gray-100 mb-10 max-w-3xl mx-auto leading-relaxed font-medium drop-shadow-lg">
-            Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
-            Transporte, hospedaje, boletos y kit Conecta — todo resuelto. 
-            Escoge tu evento, elige paquete y paga en quincenas sin estrés.
+          <p className="text-xl md:text-2xl mb-8">
+            Viajes organizados a los mejores eventos y conciertos
           </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-5 justify-center mb-10">
-            <button 
-              onClick={() => scrollToEvents('todos')}
-              className="bg-yellow-400 text-black px-10 py-5 rounded-full font-black text-lg hover:bg-yellow-300 transition-all transform hover:scale-105 shadow-2xl"
-            >
-              Ver eventos →
-            </button>
+          <div className="flex gap-4 justify-center">
             <a 
-              href="https://wa.me/5218683676890"
-              className="bg-white text-black px-10 py-5 rounded-full font-black text-lg hover:bg-gray-200 transition-all transform hover:scale-105 shadow-2xl"
+              href="#proximos-viajes"
+              className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-all transform hover:scale-105"
             >
-              📱 WhatsApp
+              Ver Viajes
             </a>
-          </div>
-
-          {/* Links rápidos */}
-          <div className="flex flex-wrap gap-6 justify-center text-base">
-            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
-              ¿Cómo funciona? →
-            </a>
-            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
-              Preguntas frecuentes →
-            </a>
-            <a href="https://wa.me/5218683676890" className="text-yellow-400 hover:text-white transition-colors font-medium">
-              Kit Conecta →
+            <a 
+              href="https://wa.me/528681234567" 
+              target="_blank"
+              className="bg-green-500 text-white px-8 py-3 rounded-full font-bold hover:bg-green-600 transition-all transform hover:scale-105"
+            >
+              WhatsApp
             </a>
           </div>
         </div>
       </section>
 
-      {/* Filtros de Eventos - STICKY */}
-      <section className="border-t-2 border-b-2 border-yellow-400 py-6 px-4 sticky top-20 bg-black z-40">
-        <div className="container mx-auto">
-          <h3 className="text-base md:text-lg font-black mb-5 tracking-wide text-yellow-400">🔥 LOS MÁS BUSCADOS</h3>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            <button 
-              onClick={() => scrollToEvents('todos')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
-                filtro === 'todos' 
-                  ? 'bg-yellow-400 text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
-              }`}
-            >
-              Todos
-            </button>
-            <button 
-              onClick={() => scrollToEvents('monterrey')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
-                filtro === 'monterrey' 
-                  ? 'bg-yellow-400 text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
-              }`}
-            >
-              Monterrey
-            </button>
-            <button 
-              onClick={() => scrollToEvents('cdmx')}
-              className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all ${
-                filtro === 'cdmx' 
-                  ? 'bg-yellow-400 text-black' 
-                  : 'bg-gray-900 text-white hover:bg-gray-800 border-2 border-yellow-400'
-              }`}
-            >
-              CDMX
-            </button>
-            <button 
-              onClick={() => scrollToEvents('todos')}
-              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border-2 border-yellow-400 transition-all"
-            >
-              Disponibles
-            </button>
-            <button 
-              onClick={() => scrollToEvents('todos')}
-              className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-base font-bold whitespace-nowrap border-2 border-yellow-400 transition-all"
-            >
-              Últimos
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Grid de Eventos - ESTILO REYNOSA */}
-      <section id="eventos-grid" className="py-16 px-4 bg-black">
-        <div className="container mx-auto">
-          {loading ? (
-            <div className="text-center py-24">
-              <p className="text-yellow-400 text-xl font-bold">Cargando eventos...</p>
-            </div>
-          ) : viajesFiltrados.length === 0 ? (
-            <div className="text-center py-24">
-              <p className="text-gray-400 text-xl">No hay eventos disponibles para este filtro</p>
-            </div>
-          ) : (
+      {/* Próximos Viajes */}
+      {viajesProximos.length > 0 && (
+        <section id="proximos-viajes" className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+              🎪 Próximos Viajes
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {viajesFiltrados.map((viaje) => (
-                <EventCard key={viaje.id} viaje={viaje} />
+              {viajesProximos.map((viaje) => (
+                <ViajeCard key={viaje.id} viaje={viaje} />
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
+
+      {/* Viajes Pasados */}
+      {viajesPasados.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-600">
+              📅 Viajes Realizados
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {viajesPasados.map((viaje) => (
+                <ViajeCard key={viaje.id} viaje={viaje} pasado={true} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Si no hay viajes */}
+      {(!viajes || viajes.length === 0) && (
+        <section className="py-20 text-center">
+          <div className="text-6xl mb-4">🎵</div>
+          <h3 className="text-2xl font-bold text-gray-600 mb-2">
+            Próximamente nuevos viajes
+          </h3>
+          <p className="text-gray-500">
+            Estamos preparando experiencias increíbles para ti
+          </p>
+        </section>
+      )}
 
       {/* Footer */}
-      <footer className="border-t-2 border-yellow-400 py-16 px-4 mt-24 bg-black">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
-            {/* Logo y descripción */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-4 mb-6">
-                <Image 
-                  src="/blanco con negro.png" 
-                  alt="Conecta Matamoros" 
-                  width={60} 
-                  height={60}
-                  className="rounded-lg"
-                />
-                <div>
-                  <h1 className="text-2xl font-black text-yellow-400 tracking-tight">CONECTA</h1>
-                  <p className="text-sm text-gray-400 font-bold">MX.</p>
-                </div>
-              </div>
-              <p className="text-base text-gray-300 max-w-md leading-relaxed mb-8">
-                Agencia de viajes a conciertos desde Matamoros, Tamaulipas. 
-                Transporte · Hospedaje · Boletos · Kit Conecta.
-              </p>
-              <a 
-                href="https://wa.me/5218683676890"
-                className="inline-block bg-yellow-400 text-black px-8 py-4 rounded-full font-black text-base hover:bg-yellow-300 transition-all"
-              >
-                ¡Reserva ya! →
-              </a>
-            </div>
-
-            {/* Web */}
-            <div>
-              <h4 className="text-base font-black mb-5 tracking-wide text-yellow-400">Web</h4>
-              <ul className="space-y-3 text-base text-gray-300">
-                <li><a href="/" className="hover:text-yellow-400 transition-colors">Eventos</a></li>
-                <li><a href="https://wa.me/5218683676890" className="hover:text-yellow-400 transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-
-            {/* Redes */}
-            <div>
-              <h4 className="text-base font-black mb-5 tracking-wide text-yellow-400">Redes</h4>
-              <ul className="space-y-3 text-base text-gray-300">
-                <li><a href="https://wa.me/5218683676890" className="hover:text-yellow-400 transition-colors">WhatsApp</a></li>
-                <li><a href="https://instagram.com" className="hover:text-yellow-400 transition-colors">Instagram</a></li>
-                <li><a href="https://facebook.com" className="hover:text-yellow-400 transition-colors">Facebook</a></li>
-                <li><a href="https://tiktok.com" className="hover:text-yellow-400 transition-colors">TikTok</a></li>
-              </ul>
-            </div>
+      <footer className="bg-black text-white py-12">
+        <div className="container mx-auto px-4 text-center">
+          <Image 
+            src="/blanco con negro.png" 
+            alt="Conecta Matamoros" 
+            width={80} 
+            height={80}
+            className="mx-auto mb-4 rounded-lg"
+          />
+          <h3 className="text-xl font-bold mb-4">Conecta Matamoros</h3>
+          <div className="flex justify-center gap-6 mb-4 text-sm">
+            <a href="https://wa.me/528681234567" className="hover:text-green-400 transition-colors">
+              WhatsApp
+            </a>
+            <a href="https://facebook.com" className="hover:text-blue-400 transition-colors">
+              Facebook
+            </a>
+            <a href="https://instagram.com" className="hover:text-pink-400 transition-colors">
+              Instagram
+            </a>
           </div>
-
-          {/* Contacto */}
-          <div className="border-t-2 border-yellow-400 pt-10">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-base text-gray-400">
-              <p>Conecta Matamoros © 2026 · Todos los derechos reservados</p>
-              <p className="text-sm text-yellow-400 font-bold">Operando desde 2013</p>
-            </div>
-          </div>
+          <p className="text-xs text-gray-500">
+            © 2026 Conecta Matamoros. Todos los derechos reservados.
+          </p>
         </div>
       </footer>
     </div>
   )
 }
 
-// Componente Tarjeta de Evento - ESTILO REYNOSA
-function EventCard({ viaje }: { viaje: any }) {
+// Componente Card de Viaje - MODIFICADO PARA USAR HTML ESTÁTICO
+function ViajeCard({ viaje, pasado = false }: { viaje: any, pasado?: boolean }) {
+  // Construir la ruta al archivo HTML estático
+  const htmlUrl = `/eventos/${viaje.slug}.html`
+  
   return (
-    <Link href={`/viaje/${viaje.slug}`}>
-      <div className="group cursor-pointer bg-gray-900 border-2 border-yellow-400 rounded-2xl overflow-hidden hover:border-white hover:shadow-2xl hover:shadow-yellow-400/20 transition-all transform hover:scale-105">
+    <a href={htmlUrl} target="_blank" rel="noopener noreferrer">
+      <div className={`group cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 ${pasado ? 'opacity-75' : ''}`}>
         {/* Imagen */}
-        <div className="relative h-72 bg-gray-800 overflow-hidden">
+        <div className="relative h-64 bg-gray-200 overflow-hidden">
           {viaje.imagen_portada ? (
             <Image
               src={viaje.imagen_portada}
@@ -307,60 +176,49 @@ function EventCard({ viaje }: { viaje: any }) {
               className="object-cover group-hover:scale-110 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
-              <span className="text-7xl">🎵</span>
+            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white text-6xl">🎵</span>
             </div>
           )}
-          {/* Badge de Fecha - Esquina superior derecha */}
-          <div className="absolute top-4 right-4 bg-yellow-400 text-black px-4 py-2 rounded-full shadow-xl">
-            <p className="text-sm font-black tracking-wide">
-              {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d MMM", { locale: es }).toUpperCase() : 'PRONTO'}
-            </p>
-          </div>
+          {pasado && (
+            <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 rounded-full text-xs font-bold">
+              Finalizado
+            </div>
+          )}
         </div>
         
         {/* Contenido */}
-        <div className="p-7 bg-black">
-          <h3 className="text-2xl font-black mb-4 text-white group-hover:text-yellow-400 transition-colors leading-tight">
+        <div className="p-6 bg-white">
+          <h3 className="text-2xl font-bold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">
             {viaje.nombre}
           </h3>
           
-          <div className="space-y-3 mb-5 text-base text-gray-300">
-            <div className="flex items-center gap-2">
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-gray-600">
               <span className="text-lg">📅</span>
               <span className="font-medium">
                 {viaje.fecha_evento ? format(new Date(viaje.fecha_evento), "d 'de' MMMM, yyyy", { locale: es }) : 'Fecha por confirmar'}
               </span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-600">
               <span className="text-lg">📍</span>
-              <span className="font-medium">{viaje.ciudad || 'Ciudad por confirmar'}</span>
+              <span>{viaje.ciudad || 'Ciudad por confirmar'}</span>
             </div>
             
             {viaje.venue && (
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
                 <span className="text-lg">🏟️</span>
                 <span>{viaje.venue}</span>
               </div>
             )}
           </div>
           
-          {/* Precio desde */}
-          {viaje.precios && (
-            <div className="mb-5 bg-gray-800 p-4 rounded-xl border border-yellow-400">
-              <p className="text-sm text-yellow-400 font-black">Desde</p>
-              <p className="text-3xl font-black text-white">
-                ${Math.min(...Object.values(viaje.precios).filter((p: number) => p > 0)).toLocaleString()}
-              </p>
-            </div>
-          )}
-          
-          <button className="w-full bg-yellow-400 text-black py-4 rounded-full font-black text-base hover:bg-yellow-300 transition-all">
-            Ver detalles
+          <button className="w-full bg-gradient-to-r from-blue-600 to-pink-500 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-pink-600 transition-all">
+            Ver Información
           </button>
         </div>
       </div>
-    </Link>
+    </a>
   )
 }
