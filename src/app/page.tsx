@@ -55,15 +55,21 @@ export default async function HomePage() {
       </header>
 
       {/* HERO MODERNO */}
-      <section className="relative pt-24 pb-32 overflow-hidden">
-        {/* Efectos de fondo */}
+      <section className="relative pt-24 pb-32 overflow-hidden min-h-[80vh] flex items-center">
+        {/* Imagen de fondo */}
         <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff283b] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#0000cd] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
-          <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-[#ff4bd1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
+          <Image
+            src="/Header_02.jpg"
+            alt="Conecta MX"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Overlay oscuro para legibilidad */}
+          <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="text-center">
             {/* Badge superior */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-8">
@@ -86,11 +92,11 @@ export default async function HomePage() {
             </h1>
 
             {/* Subtítulo */}
-            <p className="text-xl sm:text-2xl text-gray-400 mb-4 max-w-3xl mx-auto">
+            <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
               Transporte · Hospedaje · Boletos · Kit Conecta
             </p>
             <p className="text-lg text-[#e8ff4c] mb-12 font-semibold">
-              Todo incluido · Paga en quincenas · 13 años de experiencia
+              Todo incluido · Paga en quincenas
             </p>
 
             {/* CTAs */}
@@ -142,7 +148,7 @@ export default async function HomePage() {
             {/* Header de sección */}
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                CATÁLOGO <span className="text-[#ff283b]">2026</span>
+                CATÁLOGO <span className="text-[#0000cd]">2026</span>
               </h2>
               <p className="text-gray-400 text-lg">
                 Escoge tu evento y aparta con $500
@@ -276,7 +282,7 @@ function EventCard({ viaje }: { viaje: any }) {
 
   return (
     <Link href={`/viaje/${viaje.slug}`}>
-      <div className="group relative bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-[#ff283b] transition-all hover:scale-[1.02]">
+      <div className="group relative bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-[#0000cd] transition-all hover:scale-[1.02]">
         {/* Imagen */}
         <div className="relative h-72 overflow-hidden">
           {viaje.imagen_portada ? (
@@ -297,7 +303,7 @@ function EventCard({ viaje }: { viaje: any }) {
           
           {/* Badge de precio flotante */}
           {precioMinimo > 0 && (
-            <div className="absolute top-4 right-4 px-4 py-2 bg-[#ff283b] backdrop-blur-sm rounded-full">
+            <div className="absolute top-4 right-4 px-4 py-2 bg-[#0000cd] backdrop-blur-sm rounded-full">
               <div className="text-white text-xs font-bold">DESDE</div>
               <div className="text-white text-lg font-black">${precioMinimo.toLocaleString()}</div>
             </div>
@@ -325,7 +331,7 @@ function EventCard({ viaje }: { viaje: any }) {
             <span className="text-gray-400 text-sm font-medium">
               {viaje.venue || 'Venue por confirmar'}
             </span>
-            <span className="text-[#88ea4e] font-bold text-sm group-hover:translate-x-1 transition-transform">
+            <span className="text-[#0000cd] font-bold text-sm group-hover:translate-x-1 transition-transform">
               Ver detalles →
             </span>
           </div>
