@@ -28,20 +28,18 @@ interface Viaje {
 
 export default function ViajePage({ viaje }: { viaje: Viaje }) {
   const [activeTab, setActiveTab] = useState('zonas')
-  const [activeZona, setActiveZona] = useState(0)
 
   // Extraer género musical del nombre o usar default
   const genero = viaje.nombre.toLowerCase().includes('morat') ? 'POP LATINO' : 
                  viaje.nombre.toLowerCase().includes('enjambre') ? 'ROCK EN ESPAÑOL' :
                  'CONCIERTO'
 
-  // Color acento basado en el evento (puedes personalizarlo)
+  // Color acento basado en el evento
   const accentColor = '#ff283b'
 
   const zonas = [
     {
-      nombre: viaje.precios.cuadruple > 0 ? "Cuádruple" : 
-              viaje.precios.triple > 0 ? "Triple" : "Doble",
+      nombre: "Opciones de Hospedaje",
       num: viaje.venue || 'Venue',
       color: accentColor,
       precios: [
@@ -69,19 +67,75 @@ export default function ViajePage({ viaje }: { viaje: Viaje }) {
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap');
         
-        body {
-          font-family: 'Montserrat', sans-serif;
-          background: #000000;
-          display: flex;
-          justify-content: center;
-          min-height: 100vh;
+        * {
+          box-sizing: border-box;
           margin: 0;
           padding: 0;
         }
         
-        .card {
-          width: 100%;
+        body {
+          font-family: 'Montserrat', sans-serif;
+          background: #000000;
+        }
+        
+        .page-wrapper {
+          min-height: 100vh;
+          background: #000000;
+        }
+        
+        /* HEADER CONSISTENTE */
+        .top-header {
+          background: #000000;
+          border-bottom: 1px solid #1a1a1a;
+          padding: 16px 20px;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          backdrop-filter: blur(10px);
+          background: rgba(0, 0, 0, 0.95);
+        }
+        
+        .header-content {
           max-width: 440px;
+          margin: 0 auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .back-link {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.2s;
+          padding: 8px 16px;
+          border-radius: 8px;
+          background: #1a1a1a;
+        }
+        
+        .back-link:hover {
+          background: ${accentColor};
+          transform: translateX(-4px);
+        }
+        
+        .header-logo {
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+          letter-spacing: 0.5px;
+          background: ${accentColor};
+          padding: 6px 12px;
+          border-radius: 4px;
+        }
+        
+        /* CONTENEDOR PRINCIPAL */
+        .main-container {
+          max-width: 440px;
+          margin: 0 auto;
           background: #000000;
         }
         
@@ -117,16 +171,6 @@ export default function ViajePage({ viaje }: { viaje: Viaje }) {
           justify-content: space-between;
           align-items: flex-start;
           z-index: 2;
-        }
-        
-        .hero-logo {
-          font-size: 13px;
-          font-weight: 700;
-          color: #ffffff;
-          letter-spacing: 0.5px;
-          background: ${accentColor};
-          padding: 6px 12px;
-          border-radius: 4px;
         }
         
         .hero-badge {
@@ -227,7 +271,7 @@ export default function ViajePage({ viaje }: { viaje: Viaje }) {
         
         .zona-title {
           position: relative;
-          font-size: 24px;
+          font-size: 20px;
           font-weight: 800;
           color: #ffffff;
           margin-bottom: 4px;
@@ -427,6 +471,7 @@ export default function ViajePage({ viaje }: { viaje: Viaje }) {
           padding: 24px 20px;
           text-align: center;
           border-top: 1px solid #1a1a1a;
+          margin-top: 40px;
         }
         
         .footer-cta {
@@ -470,169 +515,199 @@ export default function ViajePage({ viaje }: { viaje: Viaje }) {
           color: ${accentColor};
           text-decoration: none;
         }
+
+        /* RESPONSIVE */
+        @media (min-width: 768px) {
+          .main-container {
+            margin-top: 40px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(255, 40, 59, 0.3);
+          }
+          
+          .hero {
+            border-radius: 16px 16px 0 0;
+          }
+        }
       `}</style>
 
-      <div className="card">
-        {/* HERO */}
-        <div className="hero">
-          <img src={viaje.imagen_portada} alt={viaje.nombre} className="hero-img" />
-          <div className="hero-overlay"></div>
-          <div className="hero-brand">
-            <div className="hero-logo">CONECTA</div>
-            <div className="hero-badge">{genero}</div>
-          </div>
-          <div className="hero-content">
-            <div className="hero-title">{viaje.nombre.replace(' 2026', '')}</div>
-            <div className="hero-info">
-              <div className="hero-pill">📍 {viaje.venue}</div>
-              <div className="hero-pill">📅 {new Date(viaje.fecha_evento).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-            </div>
+      <div className="page-wrapper">
+        {/* HEADER SUPERIOR */}
+        <div className="top-header">
+          <div className="header-content">
+            <Link href="/" className="back-link">
+              <span>←</span>
+              <span>Volver</span>
+            </Link>
+            <div className="header-logo">CONECTA</div>
           </div>
         </div>
 
-        {/* MAIN */}
-        <div className="main">
-          {/* NAV */}
-          <div className="nav">
-            <button 
-              className={`nav-tab ${activeTab === 'zonas' ? 'active' : ''}`}
-              onClick={() => setActiveTab('zonas')}
-            >
-              ZONAS
-            </button>
-            <button 
-              className={`nav-tab ${activeTab === 'incluye' ? 'active' : ''}`}
-              onClick={() => setActiveTab('incluye')}
-            >
-              INCLUYE
-            </button>
-            <button 
-              className={`nav-tab ${activeTab === 'detalles' ? 'active' : ''}`}
-              onClick={() => setActiveTab('detalles')}
-            >
-              DETALLES
-            </button>
-          </div>
-
-          {/* PANEL: ZONAS */}
-          <div className={`panel ${activeTab === 'zonas' ? 'active' : ''}`}>
-            <div className="zona-detail">
-              <div className="zona-hero">
-                <div className="zona-title">{zonas[0].nombre}</div>
-                <div className="zona-num">{zonas[0].num}</div>
-              </div>
-              <div className="precios-grid">
-                {zonas[0].precios.map((precio: any, i: number) => (
-                  <div key={i} className="precio-row">
-                    <div>
-                      <div className="precio-tipo">{precio.tipo}</div>
-                      <div className="precio-det">{precio.det}</div>
-                    </div>
-                    <div className="precio-monto">
-                      {precio.monto}
-                      <span style={{fontSize: '11px', fontWeight: 600, color: '#888', display: 'block', marginTop: '2px'}}>
-                        por persona
-                      </span>
-                    </div>
-                  </div>
-                ))}
+        {/* CONTENEDOR PRINCIPAL */}
+        <div className="main-container">
+          {/* HERO */}
+          <div className="hero">
+            <img src={viaje.imagen_portada} alt={viaje.nombre} className="hero-img" />
+            <div className="hero-overlay"></div>
+            <div className="hero-brand">
+              <div style={{width: '40px'}}></div>
+              <div className="hero-badge">{genero}</div>
+            </div>
+            <div className="hero-content">
+              <div className="hero-title">{viaje.nombre.replace(' 2026', '').replace(' 2025', '')}</div>
+              <div className="hero-info">
+                <div className="hero-pill">📍 {viaje.venue}</div>
+                <div className="hero-pill">📅 {new Date(viaje.fecha_evento).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
               </div>
             </div>
           </div>
 
-          {/* PANEL: INCLUYE */}
-          <div className={`panel ${activeTab === 'incluye' ? 'active' : ''}`}>
-            <div className="incluye-list">
-              {viaje.incluye.map((item: string, i: number) => {
-                const [titulo, ...descParts] = item.split(' - ')
-                const desc = descParts.join(' - ')
-                const iconos = ['🎫', '🏨', '🚌', '🎁']
-                return (
-                  <div key={i} className="incluye-item">
-                    <div className="incluye-icon">{iconos[i] || '✓'}</div>
-                    <div className="incluye-text">
-                      <div className="incluye-title">{titulo}</div>
-                      {desc && <div className="incluye-desc">{desc}</div>}
-                    </div>
-                  </div>
-                )
-              })}
+          {/* MAIN */}
+          <div className="main">
+            {/* NAV */}
+            <div className="nav">
+              <button 
+                className={`nav-tab ${activeTab === 'zonas' ? 'active' : ''}`}
+                onClick={() => setActiveTab('zonas')}
+              >
+                PRECIOS
+              </button>
+              <button 
+                className={`nav-tab ${activeTab === 'incluye' ? 'active' : ''}`}
+                onClick={() => setActiveTab('incluye')}
+              >
+                INCLUYE
+              </button>
+              <button 
+                className={`nav-tab ${activeTab === 'detalles' ? 'active' : ''}`}
+                onClick={() => setActiveTab('detalles')}
+              >
+                DETALLES
+              </button>
             </div>
-            
-            <div className="reserva-box" style={{marginTop: '24px'}}>
-              <div className="reserva-label">RESERVA CON</div>
-              <div className="reserva-monto">$500</div>
-              <div className="reserva-desc">por persona</div>
-              <div className="reserva-info">Los abonos se realizan de forma flexible hasta completar el pago total</div>
-            </div>
-          </div>
 
-          {/* PANEL: DETALLES */}
-          <div className={`panel ${activeTab === 'detalles' ? 'active' : ''}`}>
-            <div className="detalles-grid">
-              <div className="detalle-card">
-                <div className="detalle-header">
-                  <div className="detalle-icon">🎸</div>
-                  <div className="detalle-title">Sobre el Evento</div>
+            {/* PANEL: ZONAS */}
+            <div className={`panel ${activeTab === 'zonas' ? 'active' : ''}`}>
+              <div className="zona-detail">
+                <div className="zona-hero">
+                  <div className="zona-title">{zonas[0].nombre}</div>
+                  <div className="zona-num">{zonas[0].num}</div>
                 </div>
-                <div className="detalle-content">
-                  {viaje.descripcion}
-                </div>
-              </div>
-
-              <div className="detalle-card">
-                <div className="detalle-header">
-                  <div className="detalle-icon">📍</div>
-                  <div className="detalle-title">Ubicación</div>
-                </div>
-                <div className="detalle-content">
-                  <strong className="highlight">{viaje.venue}</strong><br/>
-                  {viaje.ciudad}
-                </div>
-              </div>
-
-              <div className="detalle-card">
-                <div className="detalle-header">
-                  <div className="detalle-icon">🗓️</div>
-                  <div className="detalle-title">Itinerario</div>
-                </div>
-                <div className="detalle-content">
-                  {viaje.itinerario?.map((dia: any, i: number) => (
-                    <div key={i} style={{marginBottom: '12px'}}>
-                      <strong className="highlight">{dia.dia}</strong>
-                      <ul className="detalle-list" style={{marginTop: '8px'}}>
-                        {dia.actividades.map((act: string, j: number) => (
-                          <li key={j}>{act}</li>
-                        ))}
-                      </ul>
+                <div className="precios-grid">
+                  {zonas[0].precios.map((precio: any, i: number) => (
+                    <div key={i} className="precio-row">
+                      <div>
+                        <div className="precio-tipo">{precio.tipo}</div>
+                        <div className="precio-det">{precio.det}</div>
+                      </div>
+                      <div className="precio-monto">
+                        {precio.monto}
+                        <span style={{fontSize: '11px', fontWeight: 600, color: '#888', display: 'block', marginTop: '2px'}}>
+                          por persona
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="detalle-card">
-                <div className="detalle-header">
-                  <div className="detalle-icon">💳</div>
-                  <div className="detalle-title">Forma de Pago</div>
+            {/* PANEL: INCLUYE */}
+            <div className={`panel ${activeTab === 'incluye' ? 'active' : ''}`}>
+              <div className="incluye-list">
+                {viaje.incluye?.map((item: string, i: number) => {
+                  const [titulo, ...descParts] = item.split(' - ')
+                  const desc = descParts.join(' - ')
+                  const iconos = ['🎫', '🏨', '🚌', '🎁']
+                  return (
+                    <div key={i} className="incluye-item">
+                      <div className="incluye-icon">{iconos[i] || '✓'}</div>
+                      <div className="incluye-text">
+                        <div className="incluye-title">{titulo}</div>
+                        {desc && <div className="incluye-desc">{desc}</div>}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              
+              <div className="reserva-box" style={{marginTop: '24px'}}>
+                <div className="reserva-label">RESERVA CON</div>
+                <div className="reserva-monto">$500</div>
+                <div className="reserva-desc">por persona</div>
+                <div className="reserva-info">Los abonos se realizan de forma flexible hasta completar el pago total</div>
+              </div>
+            </div>
+
+            {/* PANEL: DETALLES */}
+            <div className={`panel ${activeTab === 'detalles' ? 'active' : ''}`}>
+              <div className="detalles-grid">
+                <div className="detalle-card">
+                  <div className="detalle-header">
+                    <div className="detalle-icon">🎸</div>
+                    <div className="detalle-title">Sobre el Evento</div>
+                  </div>
+                  <div className="detalle-content">
+                    {viaje.descripcion}
+                  </div>
                 </div>
-                <div className="detalle-content">
-                  Reserva tu lugar con <strong className="highlight">$500 pesos</strong> por persona. El resto del pago se puede realizar en abonos flexibles hasta antes del evento. Aceptamos transferencias y efectivo.
+
+                <div className="detalle-card">
+                  <div className="detalle-header">
+                    <div className="detalle-icon">📍</div>
+                    <div className="detalle-title">Ubicación</div>
+                  </div>
+                  <div className="detalle-content">
+                    <strong className="highlight">{viaje.venue}</strong><br/>
+                    {viaje.ciudad}
+                  </div>
+                </div>
+
+                {viaje.itinerario && viaje.itinerario.length > 0 && (
+                  <div className="detalle-card">
+                    <div className="detalle-header">
+                      <div className="detalle-icon">🗓️</div>
+                      <div className="detalle-title">Itinerario</div>
+                    </div>
+                    <div className="detalle-content">
+                      {viaje.itinerario.map((dia: any, i: number) => (
+                        <div key={i} style={{marginBottom: i < viaje.itinerario.length - 1 ? '16px' : '0'}}>
+                          <strong className="highlight">{dia.dia}</strong>
+                          <ul className="detalle-list" style={{marginTop: '8px'}}>
+                            {dia.actividades.map((act: string, j: number) => (
+                              <li key={j}>{act}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="detalle-card">
+                  <div className="detalle-header">
+                    <div className="detalle-icon">💳</div>
+                    <div className="detalle-title">Forma de Pago</div>
+                  </div>
+                  <div className="detalle-content">
+                    Reserva tu lugar con <strong className="highlight">$500 pesos</strong> por persona. El resto del pago se puede realizar en abonos flexibles hasta antes del evento. Aceptamos transferencias y efectivo.
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* FOOTER */}
-        <div className="footer">
-          <div className="footer-cta">¿Listo para vivir esta experiencia?</div>
-          <a href={viaje.whatsapp_inscripcion} className="footer-btn" target="_blank">
-            <span>💬</span>
-            <span>RESERVAR AHORA</span>
-          </a>
-          <div className="footer-contact">
-            Más información:<br/>
-            <a href={viaje.whatsapp_inscripcion} target="_blank">WhatsApp</a>
+          {/* FOOTER */}
+          <div className="footer">
+            <div className="footer-cta">¿Listo para vivir esta experiencia?</div>
+            <a href={viaje.whatsapp_inscripcion} className="footer-btn" target="_blank" rel="noopener noreferrer">
+              <span>💬</span>
+              <span>RESERVAR AHORA</span>
+            </a>
+            <div className="footer-contact">
+              Más información:<br/>
+              <a href={viaje.whatsapp_inscripcion} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            </div>
           </div>
         </div>
       </div>
