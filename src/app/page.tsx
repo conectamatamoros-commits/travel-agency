@@ -122,7 +122,7 @@ export default async function HomePage() {
       </section>
 
       {/* BADGES DE BENEFICIOS */}
-      <section className="py-12 border-y border-white/10">
+      <section className="py-16 bg-gradient-to-r from-[#0000cd] to-[#4169E1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
@@ -132,9 +132,9 @@ export default async function HomePage() {
               { icon: '💳', title: 'PAGOS FLEXIBLES', desc: 'En quincenas' }
             ].map((item, i) => (
               <div key={i} className="text-center group cursor-pointer">
-                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">{item.icon}</div>
-                <div className="text-white font-bold text-sm mb-1">{item.title}</div>
-                <div className="text-gray-500 text-xs">{item.desc}</div>
+                <div className="text-5xl mb-3 group-hover:scale-110 transition-transform drop-shadow-lg">{item.icon}</div>
+                <div className="text-white font-black text-sm mb-1 drop-shadow-md">{item.title}</div>
+                <div className="text-white/80 text-xs font-medium">{item.desc}</div>
               </div>
             ))}
           </div>
@@ -143,8 +143,18 @@ export default async function HomePage() {
 
       {/* EVENTOS */}
       {viajesProximos.length > 0 && (
-        <section id="eventos" className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="eventos" className="py-20 relative">
+          {/* Imagen de fondo para la sección */}
+          <div className="absolute inset-0 opacity-10">
+            <Image
+              src="/Header_03.jpg"
+              alt="Background"
+              fill
+              className="object-cover"
+            />
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Header de sección */}
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
