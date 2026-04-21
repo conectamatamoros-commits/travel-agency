@@ -4,25 +4,18 @@ import ViajeComponent from './ViajeComponent'
 
 export const revalidate = 60
 
-interface Props {
-  params: {
-    slug: string
-  }
-}
-
-export default async function ViajePage({ params }: Props) {
+export default async function ViajePage({ params }: { params: { slug: string } }) {
   const supabase = await createClient()
   
-  const { data: viaje, error } = await supabase
+  const { data: viaje } = await supabase
     .from('viajes')
     .select('*')
     .eq('slug', params.slug)
     .eq('publico', true)
+    .eq('activo', true)
     .single()
   
-  if (error || !viaje) {
-    notFound()
-  }
-
+  if (!viaje) notFound()
+  
   return <ViajeComponent viaje={viaje} />
 }
