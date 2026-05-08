@@ -7,7 +7,7 @@ import { BarChart2 } from 'lucide-react'
 import { 
   Bus, LayoutDashboard, Users, CreditCard, 
   BedDouble, CheckSquare, MessageSquare, 
-  Upload, LogOut, ChevronRight, Menu, X
+  Upload, LogOut, ChevronRight, Menu, X, Ticket
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -15,16 +15,11 @@ import { useState } from 'react'
 import clsx from 'clsx'
 
 const navItems = [
-  {
-  name: 'Boletos',
-  icon: '🎫',
-  href: '/admin/boletos',
-  description: 'Gestión de boletos por evento y sucursal'
-}
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/viajes', icon: Bus, label: 'Viajes' },
   { href: '/viajeros', icon: Users, label: 'Viajeros' },
   { href: '/pagos', icon: CreditCard, label: 'Pagos' },
+  { href: '/admin/boletos', icon: Ticket, label: 'Boletos' },
   { href: '/cuartos', icon: BedDouble, label: 'Cuartos' },
   { href: '/tareas', icon: CheckSquare, label: 'Tareas' },
   { href: '/mensajes', icon: MessageSquare, label: 'Mensajes' },
