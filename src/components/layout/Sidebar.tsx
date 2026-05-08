@@ -15,6 +15,12 @@ import { useState } from 'react'
 import clsx from 'clsx'
 
 const navItems = [
+  {
+  name: 'Boletos',
+  icon: '🎫',
+  href: '/admin/boletos',
+  description: 'Gestión de boletos por evento y sucursal'
+}
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/viajes', icon: Bus, label: 'Viajes' },
   { href: '/viajeros', icon: Users, label: 'Viajeros' },
