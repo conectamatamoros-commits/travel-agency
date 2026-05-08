@@ -192,3 +192,48 @@ export default function EstadisticasPage() {
                       stat.porcentaje === 100 ? 'text-green-500' :
                       stat.porcentaje >= 50 ? 'text-yellow-400' :
                       'text-red-500'
+                    }`}>
+                      {stat.porcentaje}%
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="w-32 bg-gray-800 h-2 overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          stat.porcentaje === 100 ? 'bg-green-500' :
+                          stat.porcentaje >= 50 ? 'bg-yellow-400' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${stat.porcentaje}%` }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-black">
+              <tr>
+                <td colSpan={3} className="px-6 py-4 text-sm font-bold text-yellow-400">
+                  TOTALES
+                </td>
+                <td className="px-6 py-4 text-center text-sm font-bold text-white">
+                  {totales.total}
+                </td>
+                <td className="px-6 py-4 text-center text-sm font-bold text-green-500">
+                  {totales.enviados}
+                </td>
+                <td className="px-6 py-4 text-center text-sm font-bold text-red-500">
+                  {totales.pendientes}
+                </td>
+                <td className="px-6 py-4 text-center text-sm font-bold text-yellow-400">
+                  {promedioGlobal}%
+                </td>
+                <td className="px-6 py-4"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
